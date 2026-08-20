@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Log Masuk — AKSI</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-page">
+
+  <div class="login-container">
+
+    <div class="login-header">
+      <div class="login-icon" id="login-icon">🏫</div>
+      <h1 id="nama-sekolah">AKSI</h1>
+      <p style="margin:2px 0 0 0; font-size:12px; color:#888;
+         letter-spacing:0.5px">AKSI · Aplikasi Kokurikulum Sekolah
+         Integrasi</p>
+      <p>Sila log masuk untuk meneruskan</p>
+    </div>
+
+    <div class="form-group">
+      <label for="idPengguna">ID Pengguna</label>
+      <input type="text" id="idPengguna" class="form-input"
+             placeholder="admin / guru" autocomplete="username">
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <div class="input-password">
+        <input type="password" id="password" class="form-input"
+               placeholder="Masukkan password"
+               autocomplete="current-password">
+        <button class="tunjuk-password" type="button"
+                onclick="togolPassword()"
+                aria-label="Tunjuk password">👁</button>
+      </div>
+    </div>
+
+    <div id="mesej-ralat" class="mesej-ralat" style="display:none"></div>
+
+    <button class="btn-utama" type="button" onclick="buatLogin()"
+            id="btn-login">Log Masuk</button>
+
+    <div class="login-footer">
+      <p id="tahun-akademik"></p>
+    </div>
+
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    // Sudah ada sesi hidup? Terus masuk.
+    if (sessionStorage.getItem('token')) {
+      window.location.replace('dashboard.html');
+      return;
+    }
+
+    // Identiti sekolah — nama, tahun, logo.
+    google.script.run
+      .withSuccessHandler(function (d) {
+        if (!d) return;
+        var elNama = document.getElementById('nama-sekolah');
+        var elTahun = document.getElementById('tahun-akademik');
+        if (elNama && d.namaSekolah) {
+          elNama.textContent = d.namaSekolah;
+          document.title = 'Log Masuk — ' + d.namaSekolah;
+        }
+        if (elTahun && d.tahunAkademik) {
+          elTahun.textContent = 'Tahun Akademik ' + d.tahunAkademik;
+        }
+        if (d.logo) {
+          document.getElementById('login-icon').innerHTML =
+            '<img src="' + d.logo + '" style="width:72px;height:72px;' +
+            'object-fit:contain" alt="">';
+        }
+      })
+      .withFailureHandler(function () {})
+      .getIdentitiAwam();
+
+    window.buatLogin = function () {
+      var id = document.getElementById('idPengguna').value.trim();
+      var password = document.getElementById('password').value;
+      var btn = document.getElementById('btn-login');
+
+      sembunyiRalat();
+
+      if (!id || !password) {
+        tunjukRalat('Sila masukkan ID dan password.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sedang log masuk…';
+
+      google.script.run
+        .withSuccessHandler(function (hasil) {
+          if (hasil && hasil.berjaya) {
+            sessionStorage.setItem('token', hasil.token);
+            sessionStorage.setItem('peranan', hasil.peranan);
+            window.location.href = 'dashboard.html';
+            return;
+          }
+          btn.disabled = false;
+          btn.textContent = 'Log Masuk';
+          tunjukRalat((hasil && hasil.mesej) ||
+            'Log masuk gagal. Cuba lagi.');
+        })
+        .withFailureHandler(function (e) {
+          btn.disabled = false;
+          btn.textContent = 'Log Masuk';
+          tunjukRalat('Tidak dapat menghubungi pelayan. ' +
+            'Semak sambungan internet, kemudian cuba lagi.');
+          if (window.console) console.error(e);
+        })
+        .login(id, password);
+    };
+
+    window.togolPassword = function () {
+      var i = document.getElementById('password');
+      i.type = i.type === 'password' ? 'text' : 'password';
+    };
+
+    function tunjukRalat(mesej) {
+      var r = document.getElementById('mesej-ralat');
+      r.textContent = mesej;
+      r.style.display = 'block';
+    }
+
+    function sembunyiRalat() {
+      document.getElementById('mesej-ralat').style.display = 'none';
+    }
+
+    document.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') window.buatLogin();
+    });
+  })();
+  </script>
+
+</body>
+</html>

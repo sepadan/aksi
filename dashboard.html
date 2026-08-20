@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Dashboard — AKSI</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dashboard-page">
+
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+  <div id="toast" class="toast"></div>
+
+  <div id="rangka"></div>
+
+  <div class="kandungan" id="kandungan">
+    <div id="panel-dashboard">
+
+      <div class="halaman-header">
+        <h2>Dashboard</h2>
+        <p id="tarikh-sekarang"></p>
+      </div>
+
+      <div class="grid-kad">
+        <div class="kad statistik">
+          <div class="kad-icon">🏫</div>
+          <div class="kad-info">
+            <p class="kad-label">Jumlah Kelab Aktif</p>
+            <h3 class="kad-nilai" id="stat-kelab">-</h3>
+          </div>
+        </div>
+        <div class="kad statistik">
+          <div class="kad-icon">👥</div>
+          <div class="kad-info">
+            <p class="kad-label">Jumlah Murid</p>
+            <h3 class="kad-nilai" id="stat-murid">-</h3>
+          </div>
+        </div>
+        <div class="kad statistik">
+          <div class="kad-icon">📅</div>
+          <div class="kad-info">
+            <p class="kad-label">Perjumpaan Bulan Ini</p>
+            <h3 class="kad-nilai" id="stat-perjumpaan">-</h3>
+          </div>
+        </div>
+        <div class="kad statistik amaran">
+          <div class="kad-icon">⚠️</div>
+          <div class="kad-info">
+            <p class="kad-label">Laporan Belum Diisi</p>
+            <h3 class="kad-nilai" id="stat-laporan">-</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="seksyen">
+        <h3 class="seksyen-tajuk">⚠️ Amaran Kelengkapan Data</h3>
+        <div id="senarai-amaran" class="senarai-amaran">
+          <p class="tiada-data">Memuatkan…</p>
+        </div>
+      </div>
+
+      <div class="seksyen">
+        <h3 class="seksyen-tajuk">📅 Perjumpaan Terkini</h3>
+        <div id="senarai-perjumpaan" class="senarai-item">
+          <p class="tiada-data">Memuatkan…</p>
+        </div>
+      </div>
+
+      <div class="seksyen">
+        <h3 class="seksyen-tajuk">📝 Status Laporan Perjumpaan</h3>
+        <div id="status-laporan" class="senarai-item">
+          <p class="tiada-data">Memuatkan…</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var token = initHalaman('Dashboard');
+    if (!token) return;
+
+    document.getElementById('tarikh-sekarang').textContent =
+      new Date().toLocaleDateString('ms-MY', {
+        weekday: 'long', year: 'numeric',
+        month: 'long', day: 'numeric'
+      });
+
+    tunjukLoading(true);
+    google.script.run
+      .withSuccessHandler(function (semua) {
+        tunjukLoading(false);
+        if (!AKSI.sahHasil(semua)) return;
+        paparStatistik(semua.statistik);
+        paparAmaran(semua.amaran);
+        paparPerjumpaan(semua.perjumpaan);
+        paparStatusLaporan(semua.laporan);
+      })
+      .withFailureHandler(function (e) {
+        tunjukLoading(false);
+        tunjukToast('Tidak dapat memuatkan dashboard. ' +
+          'Semak sambungan internet.', 'ralat');
+        ['senarai-amaran', 'senarai-perjumpaan', 'status-laporan']
+          .forEach(function (id) {
+            document.getElementById(id).innerHTML =
+              '<p class="tiada-data">Gagal dimuatkan.</p>';
+          });
+        if (window.console) console.error(e);
+      })
+      .getDashboardSemua(token);
+
+    function esc(t) {
+      return String(t === null || t === undefined ? '' : t)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function paparStatistik(d) {
+      if (!d) return;
+      document.getElementById('stat-kelab').textContent = d.kelab || 0;
+      document.getElementById('stat-murid').textContent = d.murid || 0;
+      document.getElementById('stat-perjumpaan').textContent =
+        d.perjumpaan || 0;
+      document.getElementById('stat-laporan').textContent =
+        d.laporanBelumIsi || 0;
+    }
+
+    function paparAmaran(amaran) {
+      var div = document.getElementById('senarai-amaran');
+      if (!amaran || !amaran.length) {
+        div.innerHTML = '<p class="tiada-data hijau">' +
+          '✅ Tiada amaran. Semua data lengkap!</p>';
+        return;
+      }
+      div.innerHTML = amaran.map(function (a) {
+        return '<div class="amaran-item">' +
+          '<span class="amaran-ikon">⚠️</span>' +
+          '<span>' + esc(a) + '</span></div>';
+      }).join('');
+    }
+
+    function paparPerjumpaan(senarai) {
+      var div = document.getElementById('senarai-perjumpaan');
+      if (!senarai || !senarai.length) {
+        div.innerHTML = '<p class="tiada-data">' +
+          'Tiada perjumpaan bulan ini.</p>';
+        return;
+      }
+      div.innerHTML = senarai.map(function (p) {
+        return '<div class="item-baris">' +
+          '<div class="item-kiri"><strong>' + esc(p.namaKelab) +
+          '</strong><span class="badge">' + esc(p.kategori) +
+          '</span></div>' +
+          '<div class="item-kanan"><span>' +
+          esc(formatTarikh(p.tarikh)) + '</span>' +
+          '<span class="masa">' + esc(p.masa) + '</span></div>' +
+          '</div>';
+      }).join('');
+    }
+
+    function paparStatusLaporan(senarai) {
+      var div = document.getElementById('status-laporan');
+      if (!senarai || !senarai.length) {
+        div.innerHTML = '<p class="tiada-data">' +
+          'Tiada rekod perjumpaan.</p>';
+        return;
+      }
+      div.innerHTML = senarai.map(function (l) {
+        var lengkap = l.status === 'Lengkap';
+        return '<div class="item-baris">' +
+          '<div class="item-kiri"><strong>' + esc(l.namaKelab) +
+          '</strong><span>' + esc(formatTarikh(l.tarikh)) +
+          '</span></div>' +
+          '<div class="item-kanan">' +
+          '<span class="status-badge ' +
+          (lengkap ? 'hijau' : 'merah') + '">' +
+          (lengkap ? '✅' : '⏳') + ' ' + esc(l.status) +
+          '</span></div></div>';
+      }).join('');
+    }
+  })();
+  </script>
+
+</body>
+</html>
