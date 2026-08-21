@@ -577,6 +577,7 @@ function simpanLogo(dataUrl, token) {
 // ============================================
 var API_DIBENARKAN = [
   'login', 'logout', 'getTetapan', 'getScriptUrl',
+  'getIdentitiAwam', 'getSidebarData',
   'getDashboardSemua',
   'getStatistikDashboard', 'getAmaranDashboard',
   'getPerjumpaanTerkini', 'getStatusLaporan',
