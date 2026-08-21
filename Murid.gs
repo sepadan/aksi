@@ -66,20 +66,39 @@ function importMurid(csvText, token) {
       return atas.replace(/\D/g, '');
     }
 
+    // ------------------------------------------------
+    // v2 — SATU TULISAN SAHAJA.
+    // Versi lama memanggil setValues() sekali bagi
+    // setiap murid: 223 murid = 223 panggilan Sheets,
+    // kira-kira seminit. Bila permintaan mengambil masa
+    // terlalu lama, pelayar kehilangan sambungan dan
+    // memaparkan "Failed to fetch" walaupun import
+    // sebenarnya berjaya.
+    // Sekarang semua perubahan dibuat dalam ingatan,
+    // kemudian ditulis sekali gus.
+    // ------------------------------------------------
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('MURID_MASTER');
-    var dataSedia = sheet.getDataRange().getValues()
-      .slice(1);
-    var icSedia = {};
-    dataSedia.forEach(function(r, i) {
-      if (r[0]) icSedia[r[0].toString().trim()] = i + 2;
+    var semua = sheet.getDataRange().getValues();
+    var barisData = semua.slice(1).filter(function(r) {
+      return r[0] !== '' && r[0] !== null &&
+             r[0] !== undefined;
+    }).map(function(r) {
+      var salin = r.slice(0, 10);
+      while (salin.length < 10) salin.push('');
+      return salin;
+    });
+
+    var petaBaris = {};
+    barisData.forEach(function(r, i) {
+      petaBaris[r[0].toString().trim()] = i;
     });
 
     var icDalamCSV = {};
     var jumlahTambah = 0;
     var jumlahKemaskini = 0;
     var jumlahLangkau = 0;
-    var senaraiBaris = [];
+    var tarikhKini = new Date().toLocaleDateString('ms-MY');
 
     for (var i = idxHeader + 1; i < baris.length; i++) {
       var lajur = pecahCSV(baris[i]);
@@ -121,42 +140,49 @@ function importMurid(csvText, token) {
       var kaum = idx.kaum !== -1 ?
         (lajur[idx.kaum] || '').trim()
           .replace(/"/g, '') : '';
-      var tarikhKini =
-        new Date().toLocaleDateString('ms-MY');
 
-      if (icSedia[ic]) {
-        var noRow = icSedia[ic];
-        sheet.getRange(noRow, 1, 1, 10).setValues([[
-          ic, nama, tahun, namaKelas, kelasLabel,
-          jantina, agama, kaum, 'AKTIF', tarikhKini
-        ]]);
+      var rekod = [
+        ic, nama, tahun, namaKelas, kelasLabel,
+        jantina, agama, kaum, 'AKTIF', tarikhKini
+      ];
+
+      if (petaBaris[ic] !== undefined) {
+        barisData[petaBaris[ic]] = rekod;
         jumlahKemaskini++;
       } else {
-        senaraiBaris.push([
-          ic, nama, tahun, namaKelas, kelasLabel,
-          jantina, agama, kaum, 'AKTIF', tarikhKini
-        ]);
+        petaBaris[ic] = barisData.length;
+        barisData.push(rekod);
         jumlahTambah++;
       }
     }
 
-    if (senaraiBaris.length > 0) {
-      var barisAkhir = sheet.getLastRow() + 1;
-      sheet.getRange(barisAkhir, 1,
-        senaraiBaris.length, 10)
-           .setValues(senaraiBaris);
-    }
-
+    // Murid yang tiada dalam CSV ditandakan TIDAK AKTIF
     var jumlahTidakAktif = 0;
-    var dataTerkini = sheet.getDataRange().getValues()
-      .slice(1);
-    dataTerkini.forEach(function(r, i) {
+    barisData.forEach(function(r) {
       var icR = r[0] ? r[0].toString().trim() : '';
       if (icR && !icDalamCSV[icR] && r[8] === 'AKTIF') {
-        sheet.getRange(i + 2, 9).setValue('TIDAK AKTIF');
+        r[8] = 'TIDAK AKTIF';
         jumlahTidakAktif++;
       }
     });
+
+    // Satu tulisan untuk keseluruhan jadual
+    if (barisData.length > 0) {
+      sheet.getRange(2, 1, barisData.length, 10)
+           .setValues(barisData);
+    }
+
+    // Baris kosong yang ditapis tadi boleh menyebabkan
+    // jadual baharu lebih pendek daripada yang lama —
+    // bersihkan lebihan di bawah supaya tiada rekod
+    // hantu tertinggal.
+    var barisAkhirLama = sheet.getLastRow();
+    var barisAkhirBaru = barisData.length + 1;
+    if (barisAkhirLama > barisAkhirBaru) {
+      sheet.getRange(barisAkhirBaru + 1, 1,
+        barisAkhirLama - barisAkhirBaru,
+        sheet.getLastColumn()).clearContent();
+    }
 
     logAktiviti('sistem', 'IMPORT_MURID',
       'Tambah:' + jumlahTambah +
