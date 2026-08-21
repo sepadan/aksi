@@ -89,10 +89,34 @@
       '</div>';
   }
 
+  // Identiti sekolah dimuat sekali; halaman yang perlukan
+  // nama/tahun (cth cetakan Senarai) daftar melalui bilaSedia().
+  var _sekolah = null;
+  var _menunggu = [];
+
+  function bilaSedia(fn) {
+    if (typeof fn !== 'function') return;
+    if (_sekolah) { fn(_sekolah); return; }
+    _menunggu.push(fn);
+  }
+
+  function lepaskanMenunggu(d) {
+    _sekolah = d;
+    var senarai = _menunggu;
+    _menunggu = [];
+    senarai.forEach(function (f) {
+      try { f(d); } catch (e) { if (window.console) console.error(e); }
+    });
+  }
+
   function isiIdentitiSekolah() {
     google.script.run
       .withSuccessHandler(function (d) {
-        if (!d) return;
+        if (!d) {
+          lepaskanMenunggu({ namaSekolah: '', tahunAkademik: '', logo: '' });
+          return;
+        }
+        lepaskanMenunggu(d);
         var nama = document.getElementById('sidebar-nama-sekolah');
         var tahun = document.getElementById('sidebar-tahun');
         var ikon = document.getElementById('sidebar-icon');
@@ -110,7 +134,9 @@
             ' — ' + d.namaSekolah;
         }
       })
-      .withFailureHandler(function () {})
+      .withFailureHandler(function () {
+        lepaskanMenunggu({ namaSekolah: '', tahunAkademik: '', logo: '' });
+      })
       .getSidebarData(token());
   }
 
@@ -121,6 +147,16 @@
     lukisRangka(aktif);
     isiIdentitiSekolah();
     return token();
+  }
+
+  // Serasi ke belakang: halaman lama memanggil pergiHalaman('Laporan').
+  // Dalam versi statik ia jadi navigasi fail biasa.
+  function pergiHalaman(halaman) {
+    if (!token()) { pergiLogin(); return false; }
+    var padan = HALAMAN.filter(function (x) { return x.id === halaman; })[0];
+    window.location.href = padan ? padan.fail :
+      String(halaman).toLowerCase() + '.html';
+    return false;
   }
 
   function togolSidebar() {
@@ -171,10 +207,12 @@
     peranan: peranan,
     isAdmin: isAdmin,
     initHalaman: initHalaman,
-    sahHasil: sahHasil
+    sahHasil: sahHasil,
+    bilaSedia: bilaSedia
   };
 
   window.logout = logout;
+  window.pergiHalaman = pergiHalaman;
   window.pergiLogin = pergiLogin;
   window.togolSidebar = togolSidebar;
   window.tunjukToast = tunjukToast;
