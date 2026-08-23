@@ -3,7 +3,7 @@
 > Sumber rujukan utama untuk menyambung projek menggunakan ChatGPT, Claude,
 > Codex, atau sistem lain. Baca fail ini sepenuhnya sebelum mengubah kod.
 
-**Dikemas kini:** 21 Ogos 2026, Asia/Kuala_Lumpur
+**Dikemas kini:** 24 Ogos 2026, Asia/Kuala_Lumpur
 **Repositori rasmi:** `https://github.com/sepadan/aksi`
 **Laman produksi calon:** `https://sepadan.github.io/aksi/`
 **Sistem lama:** Google Apps Script HtmlService — masih perlu dikekalkan
@@ -259,6 +259,13 @@ jadi bukan ralat penukaran: `.kad-info`, `.senarai-amaran`, `.senarai-item`,
   tulisan pukal untuk mengurangkan ralat `Failed to fetch`.
 - Menyimpan token frontend dalam `sessionStorage` supaya token tidak bocor
   melalui URL, sejarah pelayar, atau `Referer`.
+- Log keluar kini memadam sesi pelayar serta-merta dan tidak lagi menunggu
+  jawapan Apps Script. Permintaan pembatalan token menggunakan `keepalive`,
+  semua permintaan mempunyai had masa 25 saat, dan tirai memuat dibuka selepas
+  20 saat jika pelayan tidak menjawab.
+- Aset `config.js`, `api.js`, dan `app.js` menggunakan versi URL
+  `?v=20260824-1` supaya pelayar tidak menjalankan kod logout lama daripada
+  cache GitHub Pages.
 - Menggantikan `getTetapan()` pada skrin log masuk dengan `getIdentitiAwam()`,
   yang hanya memulangkan tiga medan dan bukan keseluruhan tab TETAPAN kepada
   pelawat yang belum log masuk.
@@ -334,7 +341,7 @@ butang yang pasti gagal. Perlindungan sebenar ialah `doPost`.
 
 ## 8. Pengesahan automatik terakhir
 
-Pada 21 Ogos 2026:
+Pada 24 Ogos 2026:
 
 - `https://sepadan.github.io/aksi/` memberi HTTP 200 dan tajuk
   `Log Masuk — AKSI`.
@@ -350,6 +357,12 @@ Pada 21 Ogos 2026:
   semakan sintaks Node.js; jumlah ralat sintaks ialah sifar.
 - Log masuk sebenar dari GitHub Pages berjaya dan membawa ke `dashboard.html`;
   dashboard memaparkan nombor sebenar, bukan tanda `-`.
+- Pembaikan logout diterbitkan melalui GitHub Pages run #19 (berjaya dalam
+  36 saat). Fail produksi mengandungi logout tempatan serta-merta; ujian unit
+  membuktikan halaman dimuat semula dan sesi dipadam walaupun callback backend
+  tidak pernah dipanggil. Dashboard produksi turut memuat data tetamu tanpa
+  ralat JavaScript. Ujian logout menggunakan akaun guru sebenar masih perlu
+  disahkan oleh pemilik kerana kata laluan tidak disimpan dalam repo.
 
 Pengesahan ini tidak membuktikan operasi baca/tulis setiap modul. Kata laluan
 tidak tersedia dan tidak patut direkod dalam repo.
@@ -419,7 +432,7 @@ dipadam.
 
 | Modul | Baca | Tulis | Peranan | Status |
 |---|---:|---:|---|---|
-| Login/logout | Ya | sesi | guru/admin | Log masuk disahkan; logout belum |
+| Login/logout | Ya | sesi | guru/admin | Log masuk disahkan; pembaikan logout diterbitkan dan lulus ujian automatik; ujian akaun sebenar pengguna belum |
 | Dashboard | Ya | Tidak | guru/admin | Disahkan memaparkan data sebenar |
 | Senarai | Ya | eksport | guru/admin | Belum disahkan manual |
 | Keahlian | Ya | Ya | guru/admin | Belum disahkan manual |
@@ -533,6 +546,7 @@ mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
+| 24 Ogos 2026 | Logout tidak lagi menunggu backend; pembatalan token menggunakan `keepalive`; had masa API/loading ditambah; URL aset diberi versi untuk memintas cache | GitHub Pages run #19 berjaya; fail produksi sepadan; sintaks JS dan ujian logout automatik lulus; dashboard tetamu memuat data tanpa ralat | Sahkan sekali dengan akaun guru sebenar bahawa sidebar bertukar kepada Mod lihat sahaja selepas logout |
 | 21 Ogos 2026 | Blueprint diwujudkan; status dokumentasi diselaraskan | Semua halaman/aset HTTP 200; API CORS, padanan fail dan sintaks JS disahkan | Ujian log masuk sebenar |
 | 23 Ogos 2026 | Mod tetamu; log masuk dalam halaman gaya SEMAK; dropdown nama guru; tukar kata laluan admin/guru dalam Tetapan; kebenaran dipusatkan dalam `Kebenaran.gs`; `getTetapan` ditutup dari web; IC dilindungi daripada tetamu | 37 ujian kebenaran (Node) + 26 ujian pelayar (Playwright) lulus; 7 halaman dimuat dalam mod tetamu tanpa ralat JS dan tanpa kawalan tulis kelihatan | Pasang di Apps Script, buang `doPost` lama dari `Code.gs`, tekan Segerak Akaun Guru |
 | 21 Ogos 2026 | Digabungkan dengan blueprint kedua: ditambah skema 16 tab, `API_DIBENARKAN` penuh, kontrak `app.js`, resipi penukaran halaman, dan Bahagian 12 Halangan | `Auth.gs` di GitHub disemak semula mengandungi `MAKS_CUBAAN` dan `bukaSekatan`; log masuk sebenar dan dashboard disahkan | Uji halaman tulis; pasang `Murid.gs` v2 |

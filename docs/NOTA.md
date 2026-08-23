@@ -23,9 +23,9 @@ belum dibina — itu Fasa 3 dan seterusnya.
 <div id="rangka"></div>
 <div class="kandungan"> … isi halaman … </div>
 
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
-<script src="js/app.js"></script>
+<script src="js/config.js?v=20260824-1"></script>
+<script src="js/api.js?v=20260824-1"></script>
+<script src="js/app.js?v=20260824-1"></script>
 <script>
   var token = initHalaman('Dashboard');   // null jika sesi tiada
   if (token) { /* muat data halaman */ }

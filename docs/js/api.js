@@ -53,6 +53,9 @@
           fetch(window.URL_EXEC, {
             method: 'POST',
             redirect: 'follow',
+            // Logout memuat semula halaman serta-merta. keepalive memastikan
+            // permintaan kecil ini terus dihantar semasa halaman ditutup.
+            keepalive: nama === 'logout',
             signal: pemutus ? pemutus.signal : undefined,
             headers: {
               'Content-Type': 'text/plain;charset=utf-8'
