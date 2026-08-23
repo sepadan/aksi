@@ -1679,3 +1679,96 @@ body {
 
   .hasil-grid { flex-direction: column; }
 }
+
+/* ==========================================================
+   MOD TETAMU (23 Ogos 2026)
+   Menyembunyikan kawalan tulis daripada pelawat yang belum
+   log masuk. Ini KOSMETIK sahaja — kebenaran sebenar
+   dikuatkuasakan oleh Kebenaran.gs di pelayan.
+   ========================================================== */
+
+body.tetamu .hanya-guru,
+body.tetamu .hanya-admin,
+body.peranan-guru .hanya-admin { display: none !important; }
+
+.sepanduk-tetamu {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap;
+  background: #fff8e1; border: 1px solid #ffe082; border-left: 4px solid #ffb300;
+  border-radius: 10px; padding: 12px 16px; margin: 0 0 18px 0;
+  font-size: 14px; color: #7a5c00;
+}
+.sepanduk-tetamu strong { color: #5c4500; }
+
+/* Kelas sendiri, bukan .btn-kecil.
+   .btn-kecil sedia ada mempunyai latar terang (#f0f4f8) manakala
+   .btn-utama mempunyai teks putih — digabungkan, butang menjadi putih
+   atas putih dan hilang sepenuhnya. */
+.btn-masuk {
+  width: auto; padding: 9px 18px; font-size: 13px; font-weight: 600;
+  background: #1a73e8; color: #fff; border: none; border-radius: 8px;
+  cursor: pointer; font-family: inherit; margin: 0;
+}
+.btn-masuk:hover { background: #1557b0; }
+
+.kotak-tetamu { text-align: center; }
+.kotak-tetamu p { margin: 0 0 8px 0; font-size: 12px; color: #9aa4b2; }
+
+.nama-pengguna {
+  margin: 0 0 8px 0; font-size: 12px; color: #cfd6e0; text-align: center;
+  line-height: 1.4; word-break: break-word;
+}
+.nama-pengguna span {
+  display: block; font-size: 10px; text-transform: uppercase;
+  letter-spacing: .6px; color: #8b95a3;
+}
+
+/* ---- panel log masuk ---- */
+
+.panel-login { display: none; }
+.panel-login.buka { display: block; }
+
+.login-latar {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, .55);
+  z-index: 900;
+}
+.login-kotak {
+  position: fixed; z-index: 901;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: min(400px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px); overflow-y: auto;
+  background: #fff; border-radius: 16px; padding: 28px 24px 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .3);
+}
+.login-kotak h3 { margin: 0 0 18px; font-size: 20px; text-align: center; }
+.login-kotak label {
+  display: block; margin: 14px 0 6px; font-size: 13px; font-weight: 600; color: #445;
+}
+.login-kotak .form-input { width: 100%; box-sizing: border-box; }
+.login-kotak .btn-utama { width: 100%; margin-top: 18px; }
+
+.login-tutup {
+  position: absolute; top: 10px; right: 14px;
+  background: none; border: 0; font-size: 26px; line-height: 1;
+  color: #94a3b8; cursor: pointer;
+}
+.login-tutup:hover { color: #475569; }
+
+.login-tab-butang { display: flex; gap: 8px; margin-bottom: 4px; }
+.login-tab-butang button {
+  flex: 1; padding: 10px 8px; font-size: 14px; cursor: pointer;
+  background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px;
+  color: #475569; font-weight: 600;
+}
+.login-tab-butang button.aktif {
+  background: #1e3a8a; border-color: #1e3a8a; color: #fff;
+}
+
+.tab-login { display: none; }
+.tab-login.aktif { display: block; }
+
+@media (prefers-color-scheme: dark) {
+  .login-kotak { background: #1e293b; color: #e2e8f0; }
+  .login-kotak label { color: #cbd5e1; }
+  .login-tab-butang button { background: #334155; border-color: #475569; color: #cbd5e1; }
+}

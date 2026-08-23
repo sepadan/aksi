@@ -364,26 +364,59 @@
           <hr style="margin:24px 0; border:none;
                      border-top:1px solid #f0f0f0">
 
-          <h3 class="seksyen-tajuk">Tukar Password</h3>
-
-          <div class="form-group">
-            <label>Password Admin Baru</label>
-            <input type="password" id="pass-admin-baru"
-                   class="form-input"
-                   placeholder="Kosongkan jika tidak tukar">
-          </div>
-          <div class="form-group">
-            <label>Password Guru Baru</label>
-            <input type="password" id="pass-guru-baru"
-                   class="form-input"
-                   placeholder="Kosongkan jika tidak tukar">
-          </div>
-
           <button class="btn-utama"
                   style="width:auto; padding:10px 24px"
                   onclick="simpanTetapanSistem()">
             💾 Simpan Perubahan
           </button>
+        </div>
+
+        <div class="kad">
+          <h3 class="seksyen-tajuk">🔑 Kata Laluan</h3>
+
+          <div class="form-group">
+            <label for="kunci-admin-baru">Tukar kata laluan admin</label>
+            <div style="display:flex; gap:10px; flex-wrap:wrap">
+              <input type="password" id="kunci-admin-baru"
+                     class="form-input" style="flex:1; min-width:200px"
+                     placeholder="Kata laluan baharu (min 4)">
+              <button class="btn-utama hanya-admin"
+                      style="width:auto; padding:10px 24px"
+                      onclick="tukarKunciAdmin()">Tukar</button>
+            </div>
+          </div>
+
+          <hr style="margin:20px 0; border:none; border-top:1px solid #f0f0f0">
+
+          <div class="form-group">
+            <label for="kunci-guru-nama">Tukar kata laluan guru</label>
+            <div style="display:flex; gap:10px; flex-wrap:wrap">
+              <select id="kunci-guru-nama" class="form-input"
+                      style="flex:1; min-width:200px">
+                <option value="">-- Pilih Guru --</option>
+              </select>
+              <input type="password" id="kunci-guru-baru"
+                     class="form-input" style="flex:1; min-width:180px"
+                     placeholder="Kata laluan baharu (min 4)">
+              <button class="btn-utama hanya-admin"
+                      style="width:auto; padding:10px 24px"
+                      onclick="tukarKunciGuru()">Tukar</button>
+            </div>
+            <p style="font-size:12px; color:#888; margin:10px 0 0">
+              Guru baharu diberi kata laluan lalai <strong>guru</strong>
+              secara automatik apabila akaun disegerakkan.
+            </p>
+          </div>
+
+          <button class="btn-utama hanya-admin"
+                  style="width:auto; padding:10px 24px; margin-top:6px"
+                  onclick="segerakAkaunGuru()">
+            🔄 Segerak Akaun Guru
+          </button>
+          <p style="font-size:12px; color:#888; margin:10px 0 0">
+            Membuat akaun log masuk untuk setiap guru dalam tab GURU yang
+            belum ada akaun. Kata laluan guru sedia ada tidak disentuh.
+          </p>
         </div>
       </div>
 
@@ -1297,11 +1330,12 @@
             'set-tahun').value,
           tahunKokuUnit: senaraiTahunKoku('unit'),
           tahunKokuKelab: senaraiTahunKoku('kelab'),
-          tahunKokuSukan: senaraiTahunKoku('sukan'),
-          passAdminBaru: document.getElementById(
-            'pass-admin-baru').value,
-          passGuruBaru: document.getElementById(
-            'pass-guru-baru').value
+          tahunKokuSukan: senaraiTahunKoku('sukan')
+          /* Kata laluan sengaja TIDAK dihantar di sini lagi.
+             Ia ada borangnya sendiri di bawah, dengan pengesahan dan
+             mesej yang jelas. Menyelitkan tukar-kata-laluan ke dalam
+             "Simpan Tetapan" bermakna satu salah taip menukar kata
+             laluan seluruh sekolah tanpa sesiapa menyedarinya. */
         };
 
         tunjukLoading(true);
@@ -1311,17 +1345,12 @@
             if (hasil.berjaya) {
               tunjukToast('Tetapan disimpan!',
                 'berjaya');
-              document.getElementById(
-                'pass-admin-baru').value = '';
-              document.getElementById(
-                'pass-guru-baru').value = '';
             } else {
               tunjukToast(
                 'Ralat: ' + hasil.mesej, 'ralat');
             }
           })
-          .kemaskiniTetapan(data,
-            sessionStorage.getItem('token'));
+          .kemaskiniTetapan(data, AKSI.token());
       }
 
 
@@ -1494,5 +1523,114 @@
 
     </script>
 
-  </body>
+  
+<script>
+/* ---- Kata laluan (23 Ogos 2026) --------------------------------------
+   Senarai guru dimuat dari tab GURU, sama seperti dropdown log masuk,
+   supaya admin tidak perlu menaip nama dan tersalah eja. */
+(function () {
+  'use strict';
+
+  function isiDropdownGuru() {
+    var sel = document.getElementById('kunci-guru-nama');
+    if (!sel) return;
+    google.script.run
+      .withSuccessHandler(function (senarai) {
+        if (!senarai || !senarai.length) {
+          sel.innerHTML = '<option value="">(tiada guru dalam tab GURU)</option>';
+          return;
+        }
+        sel.innerHTML = '<option value="">-- Pilih Guru --</option>' +
+          senarai.map(function (n) {
+            var t = String(n).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                             .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            return '<option value="' + t + '">' + t + '</option>';
+          }).join('');
+      })
+      .withFailureHandler(function () {
+        sel.innerHTML = '<option value="">(gagal memuat senarai guru)</option>';
+      })
+      .senaraiGuruLogin();
+  }
+
+  function selepasTukar(hasil, medan) {
+    tunjukLoading(false);
+    if (!hasil) { tunjukToast('Tiada jawapan dari pelayan.', 'ralat'); return; }
+    tunjukToast(hasil.mesej || (hasil.berjaya ? 'Selesai.' : 'Gagal.'),
+                hasil.berjaya ? 'berjaya' : 'ralat');
+    if (hasil.berjaya && medan) {
+      var el = document.getElementById(medan);
+      if (el) el.value = '';
+    }
+  }
+
+  window.tukarKunciAdmin = function () {
+    var baharu = (document.getElementById('kunci-admin-baru') || {}).value || '';
+    if (baharu.length < 4) {
+      tunjukToast('Kata laluan mesti sekurang-kurangnya 4 aksara.', 'ralat');
+      return;
+    }
+    if (!confirm('Tukar kata laluan admin?\n\n' +
+                 'Anda perlu log masuk semula selepas ini.')) return;
+    tunjukLoading(true);
+    google.script.run
+      .withSuccessHandler(function (h) { selepasTukar(h, 'kunci-admin-baru'); })
+      .withFailureHandler(function (e) {
+        tunjukLoading(false);
+        if (window.AKSI && AKSI.kendaliRalat(e)) return;
+        tunjukToast('Gagal menukar kata laluan.', 'ralat');
+      })
+      .tukarKataLaluanAdmin(AKSI.token(), baharu);
+  };
+
+  window.tukarKunciGuru = function () {
+    var nama = (document.getElementById('kunci-guru-nama') || {}).value || '';
+    var baharu = (document.getElementById('kunci-guru-baru') || {}).value || '';
+    if (!nama) { tunjukToast('Sila pilih guru.', 'ralat'); return; }
+    if (baharu.length < 4) {
+      tunjukToast('Kata laluan mesti sekurang-kurangnya 4 aksara.', 'ralat');
+      return;
+    }
+    tunjukLoading(true);
+    google.script.run
+      .withSuccessHandler(function (h) { selepasTukar(h, 'kunci-guru-baru'); })
+      .withFailureHandler(function (e) {
+        tunjukLoading(false);
+        if (window.AKSI && AKSI.kendaliRalat(e)) return;
+        tunjukToast('Gagal menukar kata laluan.', 'ralat');
+      })
+      .tukarKataLaluanGuru(AKSI.token(), nama, baharu);
+  };
+
+  window.segerakAkaunGuru = function () {
+    tunjukLoading(true);
+    google.script.run
+      .withSuccessHandler(function (h) {
+        tunjukLoading(false);
+        if (!h || !h.berjaya) {
+          tunjukToast((h && h.mesej) || 'Gagal segerak akaun.', 'ralat');
+          return;
+        }
+        tunjukToast(h.baharu
+          ? h.baharu + ' akaun guru baharu dibuat (kata laluan: guru)'
+          : 'Semua guru sudah ada akaun.', 'berjaya');
+        isiDropdownGuru();
+      })
+      .withFailureHandler(function (e) {
+        tunjukLoading(false);
+        if (window.AKSI && AKSI.kendaliRalat(e)) return;
+        tunjukToast('Gagal segerak akaun.', 'ralat');
+      })
+      .pastikanAkaunGuru(AKSI.token());
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', isiDropdownGuru);
+  } else {
+    isiDropdownGuru();
+  }
+})();
+</script>
+
+</body>
 </html>

@@ -263,6 +263,75 @@ jadi bukan ralat penukaran: `.kad-info`, `.senarai-amaran`, `.senarai-item`,
   yang hanya memulangkan tiga medan dan bukan keseluruhan tab TETAPAN kepada
   pelawat yang belum log masuk.
 
+### 7b. Mod tetamu dan log masuk gaya SEMAK — 23 Ogos 2026
+
+**Apa yang berubah**
+
+- `index.html` bukan lagi skrin log masuk. Ia kini **dashboard**, dan
+  sesiapa boleh membukanya tanpa kata laluan. Log masuk ialah panel yang
+  muncul di atas halaman, bukan muka depan berasingan.
+- `dashboard.html` menjadi ubah hala ke `index.html` supaya penanda buku
+  lama tidak mati.
+- Log masuk guru menggunakan **dropdown nama** dari tab `GURU`, bukan
+  medan teks. Log masuk admin ialah tab kedua dalam panel yang sama.
+- Halaman Tetapan mendapat borang **Tukar kata laluan admin** dan
+  **Tukar kata laluan guru** (pilih guru + kata laluan), serta butang
+  **Segerak Akaun Guru**.
+
+**Model kebenaran — empat peranan**
+
+| Peranan | Boleh |
+|---|---|
+| (tiada sesi) | log masuk, identiti sekolah, senarai nama guru |
+| `tetamu` | baca semua paparan; tiada tambah, edit atau padam |
+| `guru` | baca + kerja harian |
+| `admin` | semua, termasuk tetapan, import, akaun dan arkib |
+
+**Di mana ia dikuatkuasakan**
+
+Satu tempat: `doPost` dalam `Kebenaran.gs`. Ia menyemak peranan
+**sebelum** fungsi sasaran dijalankan. `Kebenaran.gs` menggantikan
+`doPost` dan `API_DIBENARKAN` yang dahulunya dalam `Code.gs` — kedua-dua
+yang lama **mesti dibuang**, kerana dua `doPost` dalam satu projek Apps
+Script memberi tingkah laku tidak menentu.
+
+Senarai IZIN, bukan senarai LARANG. Fungsi baharu yang tidak
+disenaraikan **ditolak secara lalai**, walaupun kepada admin. Terlupa
+menyenaraikan fungsi baharu menyebabkan ia tidak berfungsi dan cepat
+disedari; terlupa melarangnya menyebabkan lubang senyap.
+
+**Sesi tetamu tidak disimpan**
+
+Token tetamu ialah pemalar `'TETAMU'` yang dikenali oleh `semakSesi()`.
+Ia tidak menulis Script Property. Kalau setiap pelawat awam menulis satu
+sesi, kuota 500 KB akan habis dan **log masuk guru yang sebenar mula
+gagal** — pelawat awam menjatuhkan sekolah.
+
+**Perlindungan IC**
+
+`TETAMU_LINDUNG_IC = true` dalam `Kebenaran.gs`. Setiap nombor 12 digit
+dalam jawapan kepada tetamu ditukar kepada `••••••••1651`. Nama, kelas
+dan semua paparan lain kekal.
+
+Ditapis di **pelayan**, bukan dengan CSS. Menyembunyikan IC di pelayar
+tidak melindungi apa-apa — sesiapa boleh membuka panel rangkaian dan
+membacanya. Kalau ia tidak sepatutnya keluar, ia tidak boleh dihantar.
+
+> Tukar kepada `false` untuk memaparkan IC penuh kepada sesiapa sahaja
+> yang membuka alamat AKSI, termasuk orang di luar sekolah. Nombor
+> MyKad kanak-kanak digunakan untuk pengesahan identiti; sebab itu ia
+> dilindungi secara lalai.
+
+**`getTetapan` ditutup dari web.** Ia dahulu ada dalam `API_DIBENARKAN`
+**tanpa semakan token** — sesiapa boleh memulangkan seluruh tab
+`TETAPAN`. Ia kini bukan API sama sekali; `getIdentitiAwam()` memberi
+tiga medan yang benar-benar diperlukan.
+
+**Menyembunyikan butang bukan keselamatan.** `app.js` menyembunyikan
+kawalan tulis daripada tetamu, termasuk butang yang dijana kemudian
+(melalui `MutationObserver`). Itu kesopanan — supaya guru tidak menekan
+butang yang pasti gagal. Perlindungan sebenar ialah `doPost`.
+
 ## 8. Pengesahan automatik terakhir
 
 Pada 21 Ogos 2026:
@@ -415,12 +484,6 @@ menambah ciri baharu** — kelemahan ini mungkin masih wujud di tempat lain.
 kehilangan sambungan. Semak `LOG_AKTIVITI` dan Apps Script → Executions sebelum
 mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
 
-**AI tidak boleh commit terus ke GitHub.** Editor GitHub menggunakan CodeMirror
-6 tanpa `textarea`, menolak `ClipboardEvent` sintetik, dan tidak mendedahkan
-`EditorView`. Kawalan komputer pula hanya memberi akses "baca" kepada pelayar.
-Alur kerja sebenar: AI menulis fail ke folder kerja, pemilik seret ke laman
-GitHub. Jangan buang masa mencuba lagi.
-
 ## 13. Risiko dan hutang teknikal
 
 - Akaun `guru` masih dikongsi; log aktiviti tidak mengenal pasti guru sebenar.
@@ -455,15 +518,14 @@ GitHub. Jangan buang masa mencuba lagi.
 4. **Repo mesti sentiasa selaras.** Setiap kali kod ditukar dalam editor Apps
    Script, muat naik fail itu ke repo pada hari yang sama. Repo pernah lapuk
    sekali dan itu mengalahkan seluruh tujuan migrasi.
-5. **Kemas kini blueprint ini pada setiap perubahan**, dalam giliran yang sama —
-   jangan tunggu diminta. Tukar tarikh, status, jadual Bahagian 10, dan tambah
-   baris ke log Bahagian 15.
-6. Fungsi backend baharu mesti dimasukkan ke `API_DIBENARKAN`.
-7. Jangan tulis ke Sheets dalam gelung.
-8. Jangan masukkan IC, nama murid, markah, password, token, atau data produksi
+5. Fungsi backend baharu mesti dimasukkan ke `API_DIBENARKAN`.
+6. Jangan tulis ke Sheets dalam gelung.
+7. Jangan masukkan IC, nama murid, markah, password, token, atau data produksi
    ke repo, log, tangkap skrin, atau prompt.
-9. Jangan padam sistem lama sebelum senarai ujian penerimaan lengkap dan pemilik
+8. Jangan padam sistem lama sebelum senarai ujian penerimaan lengkap dan pemilik
    memberi arahan.
+9. Selepas setiap perubahan, kemas kini sekurang-kurangnya tarikh, status,
+   perubahan, ujian, risiko, dan langkah seterusnya dalam fail ini.
 10. Jika perubahan belum diterbitkan atau diuji, nyatakan dengan jelas; jangan
     menandainya siap hanya kerana kod sudah ditulis.
 
@@ -472,6 +534,7 @@ GitHub. Jangan buang masa mencuba lagi.
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
 | 21 Ogos 2026 | Blueprint diwujudkan; status dokumentasi diselaraskan | Semua halaman/aset HTTP 200; API CORS, padanan fail dan sintaks JS disahkan | Ujian log masuk sebenar |
-| 21 Ogos 2026 | Digabungkan dengan blueprint kedua: ditambah skema 16 tab, `API_DIBENARKAN` penuh, kontrak `app.js`, resipi penukaran halaman, Bahagian 12 Halangan, dan peraturan kemas kini blueprint | `Auth.gs` di GitHub disemak mengandungi `MAKS_CUBAAN` dan `bukaSekatan`; log masuk sebenar dan dashboard disahkan | Uji halaman tulis; pasang `Murid.gs` v2 |
+| 23 Ogos 2026 | Mod tetamu; log masuk dalam halaman gaya SEMAK; dropdown nama guru; tukar kata laluan admin/guru dalam Tetapan; kebenaran dipusatkan dalam `Kebenaran.gs`; `getTetapan` ditutup dari web; IC dilindungi daripada tetamu | 37 ujian kebenaran (Node) + 26 ujian pelayar (Playwright) lulus; 7 halaman dimuat dalam mod tetamu tanpa ralat JS dan tanpa kawalan tulis kelihatan | Pasang di Apps Script, buang `doPost` lama dari `Code.gs`, tekan Segerak Akaun Guru |
+| 21 Ogos 2026 | Digabungkan dengan blueprint kedua: ditambah skema 16 tab, `API_DIBENARKAN` penuh, kontrak `app.js`, resipi penukaran halaman, dan Bahagian 12 Halangan | `Auth.gs` di GitHub disemak semula mengandungi `MAKS_CUBAAN` dan `bukaSekatan`; log masuk sebenar dan dashboard disahkan | Uji halaman tulis; pasang `Murid.gs` v2 |
 
 ---

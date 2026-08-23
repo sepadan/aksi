@@ -1,14 +1,28 @@
 // ============================================
-// API SHIM (v2.4) — Kalis-cookie
+// API SHIM (v3.0) — Kalis-cookie, sedar-sesi
 // Menggantikan transport google.script.run dengan
-// fetch POST ke /exec (doPost). Tidak bergantung
-// pada cookies pihak ketiga — berfungsi di Safari
-// iPhone, Chrome iOS, mod strict, dan multi-akaun.
+// fetch POST ke /exec (doPost).
+//
+// Baharu dalam v3: token dihantar dalam SAMPUL setiap
+// permintaan, bukan hanya sebagai hujah. Pelayan perlukan
+// token itu untuk memutuskan sama ada pemanggil boleh
+// menulis — dan keputusan itu mesti dibuat SEBELUM fungsi
+// sebenar dijalankan, jadi ia tidak boleh bergantung pada
+// hujah yang setiap fungsi susun berbeza-beza.
+//
 // Memerlukan window.URL_EXEC diset oleh halaman.
 // ============================================
 (function() {
   if (!window.URL_EXEC) return;
   if (typeof Proxy === 'undefined') return; // fallback
+
+  function tokenSemasa() {
+    try {
+      return sessionStorage.getItem('token') || 'TETAMU';
+    } catch (e) {
+      return 'TETAMU';
+    }
+  }
 
   function bina(h) {
     return new Proxy({}, {
@@ -33,7 +47,11 @@
             headers: {
               'Content-Type': 'text/plain;charset=utf-8'
             },
-            body: JSON.stringify({ fn: nama, args: args })
+            body: JSON.stringify({
+              fn: nama,
+              args: args,
+              token: tokenSemasa()
+            })
           })
           .then(function(r) { return r.json(); })
           .then(function(j) {
@@ -42,6 +60,10 @@
             } else {
               var ralat = new Error(
                 (j && j.ralat) || 'Ralat pelayan');
+              // Kod membezakan "sesi tamat" daripada "tiada
+              // kebenaran". Dua keadaan itu memerlukan dua
+              // mesej yang berbeza kepada guru.
+              ralat.kod = (j && j.kod) || '';
               if (h.err) h.err(ralat);
               else console.error(ralat);
             }
