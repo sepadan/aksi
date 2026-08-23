@@ -89,28 +89,82 @@ Selepas migrasi, pautan menjadi `keahlian.html` sahaja dan token kekal dalam
 
 ## Fasa
 
-**Fasa 1 — sumber di GitHub** ✅ siap
-27 fail dalam `src/`.
+> **Status pada 23 Ogos 2026.** Struktur sasaran dalam pelan asal menyebut
+> folder `src/` dan `web/`. Kenyataannya berbeza: kod Apps Script berada di
+> **akar repo**, dan frontend berada dalam **`docs/`** (folder yang dihidangkan
+> GitHub Pages). Pelan ini telah dikemas kini untuk mencerminkan keadaan sebenar.
 
-**Fasa 2 — rangka web/**
-`css/style.css`, `js/config.js`, `js/api.js`, `js/app.js`, dan `index.html`
-(Login). Uji log masuk dari `sepadan.github.io` — ini ujian CORS sebenar.
-Kalau log masuk berjaya, selebihnya mekanikal.
+**Fasa 1 — sumber di GitHub** ✅ **SIAP**
+30 fail di akar repo (bukan `src/` seperti dirancang asalnya).
 
-**Fasa 3 — halaman baca dahulu**
-`dashboard.html`, lalu `senarai.html`. Risiko rendah, tiada tulis data.
+**Fasa 2 — rangka web** ✅ **SIAP DAN DISAHKAN BERFUNGSI**
+`docs/css/style.css`, `docs/js/config.js`, `docs/js/api.js`, `docs/js/app.js`,
+`docs/index.html`.
 
-**Fasa 4 — halaman tulis**
-`keahlian`, `kehadiran`, `laporan`, `pencapaian`, `penilaian`.
+Log masuk dari `https://sepadan.github.io/aksi/` **berjaya pada 23 Ogos 2026**.
+Itu ujian CORS sebenar, dan ia lulus. Ia juga membuktikan ketiga-tiga patch
+Apps Script sudah masuk ke deployment: `Auth.gs` yang dipatch, fail baharu
+`WebBackend.gs`, dan `getIdentitiAwam` serta `getSidebarData` dalam
+`API_DIBENARKAN`.
 
-**Fasa 5 — admin & setup**
-`admin.html` (52 KB, paling besar), `setup.html`.
+**Fasa 3 — halaman baca** 🔨 **DIBINA, MENUNGGU PENGESAHAN**
+`docs/dashboard.html`, `docs/senarai.html` — kedua-duanya wujud dan memuat
+tanpa ralat JavaScript.
+
+**Fasa 4 — halaman tulis** 🔨 **DIBINA, MENUNGGU PENGESAHAN**
+`docs/keahlian.html`, `docs/kehadiran.html`, `docs/laporan.html`,
+`docs/pencapaian.html`, `docs/penilaian.html` — kesemuanya wujud dan memuat
+tanpa ralat JavaScript.
+
+**Fasa 5 — admin & setup** 🔨 **DIBINA, MENUNGGU PENGESAHAN**
+`docs/admin.html`, `docs/setup.html` — kedua-duanya wujud dan memuat tanpa
+ralat JavaScript.
+
+> ⚠️ *Dibina* bukan *disahkan*. Halaman yang memuat tanpa ralat hanya
+> membuktikan cangkerangnya betul. Yang belum diuji ialah sama ada setiap
+> operasi baca dan **tulis** benar-benar menyimpan ke spreadsheet. Gunakan
+> senarai semak di bawah.
+
+### Senarai semak pengesahan — Fasa 3, 4, 5
+
+Buat setiap satu dari `https://sepadan.github.io/aksi/`, log masuk sebagai admin.
+Selepas setiap tindakan **tulis**, buka spreadsheet AKSI dan sahkan barisnya
+benar-benar masuk.
+
+**Fasa 3 — baca sahaja, tiada risiko**
+
+- [ ] `dashboard.html` — statistik terpapar, bukan sifar atau kosong
+- [ ] `senarai.html` — senarai murid terpapar, carian berfungsi
+
+**Fasa 4 — tulis. Uji dengan satu rekod, kemudian padam semula**
+
+- [ ] `keahlian.html` — tambah seorang murid ke satu kelab, sahkan dalam tab `KEAHLIAN`, padam semula
+- [ ] `kehadiran.html` — buat satu perjumpaan, tanda kehadiran, sahkan dalam tab `PERJUMPAAN` dan `KEHADIRAN`
+- [ ] `laporan.html` — hantar satu laporan dengan **satu gambar**, sahkan PDF dijana dan `PDF_URL` terisi
+- [ ] `pencapaian.html` — tambah satu pencapaian, sahkan dalam tab `PENCAPAIAN`, padam semula
+- [ ] `penilaian.html` — isi markah seorang murid, sahkan dalam tab `PENILAIAN_KOKU`
+
+**Fasa 5 — admin. Uji paling akhir**
+
+- [ ] `admin.html` — buka setiap tab dalamnya, sahkan tiada yang kosong
+- [ ] `setup.html` — buka sahaja, **jangan jalankan setup semula**
+
+> Muat naik gambar dalam `laporan.html` ialah ujian paling berisiko. Muatan
+> Apps Script terhad ~50 MB dan masa jalan 6 minit. Kalau gambar besar gagal,
+> ia perlu dikecilkan di klien dahulu — lihat perkara 4 di bawah.
+
+---
 
 **Fasa 6 — kecilkan Apps Script**
+⏸️ **BELUM BERMULA — dan memang belum patut.**
+
 Buang semua `HtmlService` dari `Code.gs`; `doGet` tinggal untuk semakan
 kesihatan. Padam 13 fail `.html` dari projek Apps Script.
-**Jangan buat fasa ini sebelum Fasa 5 disahkan berfungsi** — deployment lama
-adalah jaring keselamatan.
+
+**Jangan buat fasa ini sebelum senarai semak Fasa 3–5 di atas selesai
+sepenuhnya.** Deployment lama ialah satu-satunya jaring keselamatan; sebaik ia
+dibuang, tiada jalan pulang kalau ada operasi tulis yang rupanya tidak
+berfungsi.
 
 ---
 

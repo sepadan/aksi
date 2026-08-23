@@ -7,16 +7,44 @@ Sistem pengurusan kokurikulum SK Paya Redan.
 | Spreadsheet (pusat data) | `1ElBfhTcj1pcxYS6hA2mzTfEeX5udCskODnNdqU7G_dM` |
 | Projek Apps Script | `1a-_G8leFyeftmf4jUB5JURZbZGYlmqlyKgRHm7H8sdqbFGXX5GFDwskK` |
 | Pemilik | `sekolah-3458-cm1@moe-dl.edu.my` |
+| Aplikasi web | https://sepadan.github.io/aksi/ |
 
 ## Struktur repo
 
 ```
-src/     kod Apps Script (sumber rasmi — 27 fail)
-web/     frontend GitHub Pages  (belum dibina)
+*.gs  *.html          kod Apps Script — sumber rasmi, di akar repo
+docs/                 aplikasi web, dihidangkan oleh GitHub Pages
+  index.html          log masuk
+  dashboard.html  senarai.html
+  keahlian.html   kehadiran.html  laporan.html
+  pencapaian.html penilaian.html
+  admin.html      setup.html
+  css/style.css
+  js/config.js        URL /exec — satu-satunya tempat ia ditetapkan
+  js/api.js           shim: google.script.run → fetch POST
+  js/app.js           sesi, sidebar, navigasi
 ```
 
-`src/` ialah salinan tepat projek Apps Script pada 20 Ogos 2026.
-Lihat `PELAN-MIGRASI.md` untuk arah seterusnya.
+## Bagaimana aplikasi web berfungsi
+
+Spreadsheet kekal sebagai pusat data. Apps Script menjadi **API JSON** —
+`doPost` menerima `{"fn":"namaFungsi","args":[...]}` dan memulangkan
+`{"ok":true,"hasil":...}`, dengan senarai putih `API_DIBENARKAN`.
+
+Antara muka pula dihidangkan sebagai fail statik dari GitHub Pages.
+`docs/js/api.js` memasang *shim*: ia menggantikan `google.script.run` dengan
+`Proxy` yang menghantar `fetch` POST ke `/exec`, guna
+`Content-Type: text/plain` supaya tiada preflight CORS. Kesannya, setiap
+halaman masih memanggil `google.script.run` seperti biasa — tiada satu pun
+panggilan perlu ditulis semula.
+
+**Status:** log masuk dari GitHub Pages disahkan berfungsi pada 23 Ogos 2026.
+Halaman selebihnya sudah dibina dan menunggu pengesahan operasi baca/tulis —
+lihat senarai semak dalam `PELAN-MIGRASI.md`.
+
+> Bila deployment Apps Script ditukar, kemas kini `docs/js/config.js`.
+> Guna **Manage deployments**, bukan **New deployment** — New deployment
+> mencipta URL baharu dan memutuskan aplikasi web.
 
 ## Tab spreadsheet (16)
 
