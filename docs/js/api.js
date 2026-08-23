@@ -41,9 +41,19 @@
         return function() {
           var args = Array.prototype.slice
             .call(arguments);
+          /* Had masa. Tanpa ini, permintaan yang tidak pernah
+             dijawab menggantung antara muka selama-lamanya —
+             tiada ralat, tiada mesej, hanya tirai memuat. */
+          var pemutus = (typeof AbortController !== 'undefined')
+            ? new AbortController() : null;
+          var jam = setTimeout(function() {
+            if (pemutus) pemutus.abort();
+          }, 25000);
+
           fetch(window.URL_EXEC, {
             method: 'POST',
             redirect: 'follow',
+            signal: pemutus ? pemutus.signal : undefined,
             headers: {
               'Content-Type': 'text/plain;charset=utf-8'
             },
@@ -53,7 +63,23 @@
               token: tokenSemasa()
             })
           })
-          .then(function(r) { return r.json(); })
+          .then(function(r) {
+            clearTimeout(jam);
+            return r.text().then(function(teks) {
+              try {
+                return JSON.parse(teks);
+              } catch (e) {
+                /* Apps Script memulangkan HTML, bukan JSON. Hampir selalu
+                   bermakna doPost tiada dalam projek, atau deployment
+                   perlu dibuat semula. */
+                var x = new Error('Pelayan memulangkan halaman, bukan data. ' +
+                  'Semak: doPost ada dalam projek? Deployment sudah ' +
+                  'dibuat semula (New version)?');
+                x.kod = 'BUKAN_JSON';
+                throw x;
+              }
+            });
+          })
           .then(function(j) {
             if (j && j.ok) {
               if (h.ok) h.ok(j.hasil);
@@ -69,6 +95,11 @@
             }
           })
           .catch(function(e) {
+            clearTimeout(jam);
+            if (e && e.name === 'AbortError') {
+              e = new Error('Pelayan tidak menjawab dalam 25 saat.');
+              e.kod = 'TAMAT_MASA';
+            }
             if (h.err) h.err(e);
             else console.error(e);
           });

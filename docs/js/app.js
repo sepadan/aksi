@@ -73,14 +73,24 @@
     window.location.reload();
   }
 
+  /* Log keluar mesti berlaku SERTA-MERTA di pelayar.
+     Versi pertama menunggu jawapan pelayan dahulu — bila pelayan tidak
+     menjawab, guru terperangkap pada skrin memuat dan masih log masuk.
+     Log keluar yang boleh gagal bukan log keluar.
+     Pelayan diberitahu secara hantar-dan-lupa; kalau ia terlepas, sesi
+     itu akan luput sendiri dalam 8 jam. */
   function logout() {
     var t = token();
-    if (t === TETAMU) { keluarSesi(); return; }
-    tunjukLoading(true);
-    google.script.run
-      .withSuccessHandler(keluarSesi)
-      .withFailureHandler(keluarSesi)
-      .logout(t);
+    try { sessionStorage.clear(); } catch (e) {}
+    if (t !== TETAMU) {
+      try {
+        google.script.run
+          .withSuccessHandler(function () {})
+          .withFailureHandler(function () {})
+          .logout(t);
+      } catch (e) {}
+    }
+    window.location.reload();
   }
 
   // ---------- panel log masuk ----------
@@ -467,9 +477,22 @@
     setTimeout(function () { toast.classList.remove('aktif'); }, 3000);
   }
 
+  /* Pengawal masa. Tirai memuat yang tidak pernah hilang kelihatan
+     seperti sistem rosak, dan guru tiada cara untuk keluar daripadanya.
+     Selepas 20 saat, tirai dibuka dan sebabnya dinyatakan. */
+  var _jamLoading = null;
+
   function tunjukLoading(tunjuk) {
     var o = document.getElementById('loading-overlay');
     if (o) o.style.display = tunjuk ? 'flex' : 'none';
+    if (_jamLoading) { clearTimeout(_jamLoading); _jamLoading = null; }
+    if (!tunjuk) return;
+    _jamLoading = setTimeout(function () {
+      _jamLoading = null;
+      if (o) o.style.display = 'none';
+      tunjukToast('Pelayan tidak menjawab. Semak sambungan internet, atau ' +
+                  'deployment Apps Script mungkin belum dikemas kini.', 'ralat');
+    }, 20000);
   }
 
   function formatTarikh(tarikh) {
