@@ -1,5 +1,24 @@
 # Blueprint sambungan projek AKSI
 
+> ### 📍 Fail ini ialah **jejari**, bukan hab
+>
+> Ia menerangkan **dalaman AKSI sahaja**.
+>
+> **Hab ekosistem:** <https://sepadan.github.io/dashboard/BLUEPRINT.md>
+> (dalam repo: `sepadan/dashboard` → `BLUEPRINT.md`)
+>
+> Baca hab dahulu. Ia memegang peraturan merentas sistem, kontrak data antara
+> sistem, akaun dan rahsia, serta **daftar isu**.
+>
+> **Fail ini tidak menyimpan senarai isu.** Setiap perkara yang belum selesai —
+> bagi mana-mana sistem — dicatat dalam **bahagian 8 hab**. Jangan mulakan satu
+> di sini. Dua senarai isu bermakna dua versi kebenaran, dan yang kedua akan
+> bercanggah dalam masa beberapa minggu tanpa sesiapa perasan.
+>
+> Fail ini juga **tidak membuat kenyataan status tentang sistem lain**.
+
+---
+
 > Sumber rujukan utama untuk menyambung projek menggunakan ChatGPT, Claude,
 > Codex, atau sistem lain. Baca fail ini sepenuhnya sebelum mengubah kod.
 
@@ -437,7 +456,13 @@ Pada 24 Ogos 2026:
 Pengesahan ini tidak membuktikan operasi baca/tulis setiap modul. Kata laluan
 tidak tersedia dan tidak patut direkod dalam repo.
 
-## 9. Langkah seterusnya — ikut urutan ini
+## 9. Prosedur pengesahan berperingkat
+
+Ini **prosedur**, bukan senarai isu — ia menerangkan *bagaimana* menguji, bukan
+*apa* yang masih tertunggak. Status semasa setiap langkah dicatat sebagai isu
+#14 dalam hab.
+
+Ikut urutan ini.
 
 ### Langkah 1: ujian log masuk sebenar
 
@@ -571,6 +596,9 @@ mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
 
 ## 13. Risiko dan hutang teknikal
 
+Senarai ini ialah **konteks**, bukan senarai kerja. Risiko yang memerlukan
+tindakan dicatat sebagai isu dalam hab; yang di sini diterima secara sedar.
+
 - Akaun `guru` masih dikongsi; log aktiviti tidak mengenal pasti guru sebenar.
 - Hash password ialah SHA-256 tanpa salt, minimum 4 aksara. Had cubaan
   mengurangkan serangan tetapi tidak menggantikan sistem identiti individu.
@@ -580,7 +608,6 @@ mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
   tidak dapat dielakkan pada seni bina statik.
 - `doPost` masih menggunakan `this[req.fn]`; peta fungsi eksplisit lebih kukuh
   tetapi belum dilaksanakan.
-- Pemasangan pemicu `cuciSesiLama` belum mempunyai bukti operasi.
 - Laporan bergambar tertakluk pada had saiz dan masa Apps Script; gambar besar
   patut dikecilkan di klien jika ujian menunjukkan masalah.
 - `dashboard.html` dan `senarai.html` ditulis semula dengan tangan dan mendapat
@@ -588,7 +615,6 @@ mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
   setiap panggilan, `AKSI.sahHasil()` untuk sesi tamat, dan helper `esc()`
   sebelum `innerHTML`. Lima halaman lain dan `admin.html` ditukar secara
   mekanikal, jadi ia masih tiada ketiga-tiganya.
-- Folder kerja tempatan bukan klon Git, jadi `git diff` tidak tersedia.
 - PWA sengaja tidak menyediakan suntingan luar talian. Data operasi sentiasa
   memerlukan internet supaya guru tidak melihat atau menghantar rekod lapuk.
 
@@ -605,14 +631,17 @@ mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
 4. **Repo mesti sentiasa selaras.** Setiap kali kod ditukar dalam editor Apps
    Script, muat naik fail itu ke repo pada hari yang sama. Repo pernah lapuk
    sekali dan itu mengalahkan seluruh tujuan migrasi.
-5. Fungsi backend baharu mesti dimasukkan ke `API_DIBENARKAN`.
+5. Fungsi backend baharu mesti disenaraikan dalam `Kebenaran.gs` — pilih
+   `API_TETAMU`, `API_GURU` atau `API_ADMIN` mengikut siapa yang patut boleh
+   memanggilnya. Fungsi yang tidak disenaraikan **ditolak secara lalai**.
+   (`API_DIBENARKAN` dalam `Code.gs` sudah dibuang pada 23 Ogos 2026.)
 6. Jangan tulis ke Sheets dalam gelung.
 7. Jangan masukkan IC, nama murid, markah, password, token, atau data produksi
    ke repo, log, tangkap skrin, atau prompt.
 8. Jangan padam sistem lama sebelum senarai ujian penerimaan lengkap dan pemilik
    memberi arahan.
-9. Selepas setiap perubahan, kemas kini sekurang-kurangnya tarikh, status,
-   perubahan, ujian, risiko, dan langkah seterusnya dalam fail ini.
+9. Selepas setiap perubahan, kemas kini tarikh, perubahan, ujian dan risiko
+   dalam fail ini — dan **isu dalam hab**, bukan di sini.
 10. Jika perubahan belum diterbitkan atau diuji, nyatakan dengan jelas; jangan
     menandainya siap hanya kerana kod sudah ditulis.
 
