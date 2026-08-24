@@ -381,6 +381,12 @@ Pada 24 Ogos 2026:
   tidak pernah dipanggil. Dashboard produksi turut memuat data tetamu tanpa
   ralat JavaScript. Ujian logout menggunakan akaun guru sebenar masih perlu
   disahkan oleh pemilik kerana kata laluan tidak disimpan dalam repo.
+- Paparan senarai diterbitkan melalui GitHub Pages run #21. Dalam mod tetamu,
+  Pencapaian memaparkan 2 rekod produksi; Kehadiran dan Laporan masing-masing
+  memaparkan 17 pilihan kelab. Dataset semasa memulangkan 0 perjumpaan untuk
+  kelab yang disemak terus melalui API (`ok:true`), maka keadaan kosong pada
+  senarai perjumpaan/laporan ialah data sebenar dan bukan kegagalan token.
+  Ketiga-tiga halaman mempunyai sifar kawalan tambah/edit/padam yang kelihatan.
 
 Pengesahan ini tidak membuktikan operasi baca/tulis setiap modul. Kata laluan
 tidak tersedia dan tidak patut direkod dalam repo.
@@ -454,9 +460,9 @@ dipadam.
 | Dashboard | Ya | Tidak | guru/admin | Disahkan memaparkan data sebenar |
 | Senarai | Ya | eksport | guru/admin | Belum disahkan manual |
 | Keahlian | Ya | Ya | guru/admin | Belum disahkan manual |
-| Kehadiran | Ya | Ya | tetamu/guru/admin | Kod paparan awal + penapis siap; menunggu semakan produksi |
-| Laporan | Ya | Ya + fail | tetamu/guru/admin | Kod senarai awal + penapis siap; menunggu semakan produksi |
-| Pencapaian | Ya | Ya | tetamu/guru/admin | Token tetamu dan carian diperbetulkan; menunggu semakan produksi |
+| Kehadiran | Ya | Ya | tetamu/guru/admin | Produksi tetamu: 17 pilihan kelab; 0 perjumpaan sepadan dengan respons API sebenar; tiada kawalan tulis |
+| Laporan | Ya | Ya + fail | tetamu/guru/admin | Produksi tetamu: 17 pilihan kelab; senarai kosong kerana tiada perjumpaan; tiada kawalan tulis |
+| Pencapaian | Ya | Ya | tetamu/guru/admin | Produksi tetamu memaparkan 2 rekod; carian tidak diautolengkap; tiada kawalan tulis |
 | Penilaian | Ya | Ya | guru/admin | Belum disahkan manual |
 | Admin | Ya | Ya | admin sahaja | Import murid gagal `Failed to fetch`; pembetulan disediakan, belum diuji |
 | Setup | Ya | Ya | keadaan belum setup | Belum disahkan manual |
@@ -564,7 +570,7 @@ mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
-| 24 Ogos 2026 | Semua panggilan halaman menggunakan `AKSI.token()`; Kehadiran dan Laporan memaparkan senarai sebelum penapis dipilih; Pencapaian memuat rekod tetamu dan menghalang autofill carian | Semua skrip sebaris HTML lulus semakan sintaks; tiada lagi bacaan token sesi terus dalam `docs/*.html` | Terbitkan GitHub Pages dan sahkan tiga halaman produksi sebagai tetamu |
+| 24 Ogos 2026 | Semua panggilan halaman menggunakan `AKSI.token()`; Kehadiran dan Laporan memaparkan senarai sebelum penapis dipilih; Pencapaian memuat rekod tetamu dan menghalang autofill carian | GitHub Pages run #21 berjaya; produksi tetamu: 2 rekod Pencapaian, 17 pilihan kelab pada Kehadiran/Laporan, 0 kawalan tulis; API perjumpaan yang disemak membalas `ok:true` dengan 0 rekod | Sahkan paparan yang sama selepas log masuk guru/admin menggunakan akaun sebenar pemilik |
 | 24 Ogos 2026 | Logout tidak lagi menunggu backend; pembatalan token menggunakan `keepalive`; had masa API/loading ditambah; URL aset diberi versi untuk memintas cache | GitHub Pages run #19 berjaya; fail produksi sepadan; sintaks JS dan ujian logout automatik lulus; dashboard tetamu memuat data tanpa ralat | Sahkan sekali dengan akaun guru sebenar bahawa sidebar bertukar kepada Mod lihat sahaja selepas logout |
 | 21 Ogos 2026 | Blueprint diwujudkan; status dokumentasi diselaraskan | Semua halaman/aset HTTP 200; API CORS, padanan fail dan sintaks JS disahkan | Ujian log masuk sebenar |
 | 23 Ogos 2026 | Mod tetamu; log masuk dalam halaman gaya SEMAK; dropdown nama guru; tukar kata laluan admin/guru dalam Tetapan; kebenaran dipusatkan dalam `Kebenaran.gs`; `getTetapan` ditutup dari web; IC dilindungi daripada tetamu | 37 ujian kebenaran (Node) + 26 ujian pelayar (Playwright) lulus; 7 halaman dimuat dalam mod tetamu tanpa ralat JS dan tanpa kawalan tulis kelihatan | Pasang di Apps Script, buang `doPost` lama dari `Code.gs`, tekan Segerak Akaun Guru |

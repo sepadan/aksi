@@ -225,15 +225,17 @@
         return new Promise(function(resolve) {
           google.script.run
             .withSuccessHandler(function(data) {
-              resolve((data || []).map(function(p) {
+              resolve({ gagal: false, data: (data || []).map(function(p) {
                 return Object.assign({}, p, {
                   idKelab: kelab.id,
                   namaKelab: kelab.nama,
                   kategori: kelab.kategori
                 });
-              }));
+              }) });
             })
-            .withFailureHandler(function() { resolve([]); })
+            .withFailureHandler(function() {
+              resolve({ gagal: true, data: [] });
+            })
             .getPerjumpaanKelab(kelab.id, AKSI.token());
         });
       }
@@ -245,19 +247,24 @@
 
         try {
           const semua = [];
+          let gagal = 0;
           // Hadkan kepada empat permintaan serentak supaya backend stabil.
           for (let i = 0; i < senaraiKelab.length; i += 4) {
             const kelompok = await Promise.all(
               senaraiKelab.slice(i, i + 4).map(dapatkanPerjumpaanKelab)
             );
-            kelompok.forEach(function(data) {
-              semua.push.apply(semua, data);
+            kelompok.forEach(function(hasil) {
+              if (hasil.gagal) gagal++;
+              semua.push.apply(semua, hasil.data);
             });
           }
           senaraiPerjumpaanSemua = semua.sort(function(a, b) {
             return new Date(b.tarikh) - new Date(a.tarikh);
           });
           paparSenaraiPerjumpaan();
+          if (gagal) {
+            tunjukToast(gagal + ' senarai kelab gagal dimuat. Cuba muat semula halaman.', 'ralat');
+          }
         } finally {
           tunjukLoading(false);
         }
