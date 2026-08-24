@@ -17,30 +17,34 @@ backend terus dari sini, tanpa tuan perlu menampal 27 fail satu per satu.
 
 ---
 
-## ⚠️ Salinan ini LAPUK
+## Ketepatan setiap fail
 
-**Tarikh snapshot: 20 Ogos 2026.**
+| Fail | Tarikh | Keadaan |
+|---|---|---|
+| `Kebenaran.gs` | 23 Ogos 2026 | Sepadan dengan yang dipasang |
+| `Auth.gs` | 23 Ogos 2026 | Sepadan dengan yang dipasang |
+| **`Code.gs`** | **20 Ogos 2026** | **LAPUK — lihat di bawah** |
+| Selebihnya (25 fail) | 20 Ogos 2026 | Belum berubah sejak itu |
 
-Yang sudah berubah dalam projek sebenar tetapi **belum** dicerminkan di sini:
+### ⚠️ `Code.gs` lapuk
 
-- `Kebenaran.gs` — fail baharu (23 Ogos). Mengandungi `doPost` dan seluruh
-  matriks kebenaran empat peranan. **Tiada langsung dalam folder ini**
-- `Auth.gs` — ditulis semula untuk mod tetamu: token tetamu, dropdown nama
-  guru, tukar kata laluan. Salinan di sini ialah versi lama
-- `Code.gs` — `doPost` dan `API_DIBENARKAN` sudah **dibuang** daripada
-  projek sebenar. Salinan di sini masih mengandunginya
+Dalam projek sebenar, `doPost(e)` dan array `var API_DIBENARKAN = [...]`
+sudah **dibuang** daripada `Code.gs` pada 23 Ogos, dan digantikan oleh
+`Kebenaran.gs`. Salinan di sini masih mengandungi kedua-duanya.
 
-Jangan pulihkan projek Apps Script daripada folder ini tanpa membaca
-bahagian 7b `BLUEPRINT-AKSI.md` dahulu. Memulihkan `Code.gs` lama akan
-mengembalikan `doPost` kedua ke dalam projek, dan dua `doPost` memberi
-tingkah laku yang tidak menentu.
+**Jangan pulihkan `Code.gs` daripada folder ini** tanpa membuang semula dua
+benda itu. Dua `doPost` dalam satu projek Apps Script memberi tingkah laku
+yang tidak menentu — log masuk berpusing tanpa mesej ralat, dan puncanya
+sukar dikesan.
+
+Lihat bahagian 7b `BLUEPRINT-AKSI.md` untuk model kebenaran penuh.
 
 ---
 
 ## Cara mengemas kini salinan ini
 
-Buka setiap fail dalam editor Apps Script, salin isinya, tampal ke fail
-yang sama di sini, kemudian commit. Ambil masa lebih kurang sepuluh minit.
+Buka fail dalam editor Apps Script, salin isinya, tampal ke fail yang sama
+di sini, commit. Untuk `Code.gs` sahaja pun sudah memadai buat masa ini.
 
 Buat ini **setiap kali** kod backend berubah — bukan kemudian. Cerminan
 yang lapuk lebih bahaya daripada tiada cerminan langsung, kerana ia
