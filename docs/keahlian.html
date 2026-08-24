@@ -186,9 +186,9 @@
 
     </div>
 
-      <script src="js/config.js?v=20260824-1"></script>
-  <script src="js/api.js?v=20260824-1"></script>
-  <script src="js/app.js?v=20260824-1"></script>
+      <script src="js/config.js?v=20260824-2"></script>
+  <script src="js/api.js?v=20260824-2"></script>
+  <script src="js/app.js?v=20260824-2"></script>
     <script>
 
       var semuaKelab = [];
@@ -279,7 +279,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .getDataKeahlianKelab(idKelab,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function paparAhli(ahli) {
@@ -364,7 +364,7 @@
             }
           })
           .tukarJawatanAhli(ic, kelabSemasa.id,
-            jawatan, sessionStorage.getItem('token'));
+            jawatan, AKSI.token());
       }
 
       // ===== PADAM KEKAL (ADMIN) =====
@@ -387,7 +387,7 @@
             }
           })
           .padamKeahlianKekal(ic, kelabSemasa.id,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       // ===== TAMBAH AHLI =====
@@ -448,7 +448,7 @@
             }).join('');
           })
           .cariMuridUntukKeahlian(q, kelabSemasa.id,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function tambahAhli(ic) {
@@ -468,7 +468,7 @@
             }
           })
           .tambahAhliKelab(ic, kelabSemasa.id,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       // ===== MOD SEMAKAN (v3.2) =====
@@ -505,7 +505,7 @@
               });
             })
             .getSenaraiKelasAktif(
-              sessionStorage.getItem('token'));
+              AKSI.token());
           muatSemakan();
         }
       }
@@ -525,7 +525,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .getSemakanKeahlian(kelas,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function adaTiada(m) {
@@ -690,7 +690,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .tukarKelabAhli(m.ic, idKelab,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function sahkanDaftarTerus(i, idSel) {
@@ -715,7 +715,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .tambahAhliKelab(m.ic, idKelab,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
     </script>

@@ -339,6 +339,24 @@ kawalan tulis daripada tetamu, termasuk butang yang dijana kemudian
 (melalui `MutationObserver`). Itu kesopanan — supaya guru tidak menekan
 butang yang pasti gagal. Perlindungan sebenar ialah `doPost`.
 
+### 7c. Paparan senarai dahulu, penapis kemudian — 24 Ogos 2026
+
+- Tetamu, guru dan admin mesti menerima data paparan yang sama. Peranan hanya
+  mengubah ketersediaan tindakan tulis.
+- Halaman tidak boleh membaca token menggunakan
+  `sessionStorage.getItem('token')` secara terus. Gunakan `AKSI.token()` supaya
+  sesi kosong dihantar sebagai token baca sahaja `TETAMU`.
+- Kehadiran memuat semua perjumpaan semasa halaman dibuka. Dropdown kategori
+  dan kelab menapis senarai yang sudah dimuat; memilih kelab bukan lagi syarat
+  untuk melihat data.
+- Laporan memuat senarai semua perjumpaan beserta status laporan. Dropdown
+  kategori, kelab dan perjumpaan ialah penapis/pintasan kepada butiran.
+- Pencapaian memuat semua rekod pada permulaan; peringkat dan kotak carian hanya
+  menapis hasil. Autolengkap pelayar dimatikan pada kotak carian supaya nama
+  akaun seperti `admin` tidak tersalah muncul sebagai carian.
+- Tetamu tidak menerima butang tambah, isi, edit atau padam. Backend terus
+  menolak panggilan tulis walaupun seseorang cuba memanggilnya secara manual.
+
 ## 8. Pengesahan automatik terakhir
 
 Pada 24 Ogos 2026:
@@ -436,9 +454,9 @@ dipadam.
 | Dashboard | Ya | Tidak | guru/admin | Disahkan memaparkan data sebenar |
 | Senarai | Ya | eksport | guru/admin | Belum disahkan manual |
 | Keahlian | Ya | Ya | guru/admin | Belum disahkan manual |
-| Kehadiran | Ya | Ya | guru/admin | Belum disahkan manual |
-| Laporan | Ya | Ya + fail | guru/admin | Belum disahkan manual |
-| Pencapaian | Ya | Ya | guru/admin | Belum disahkan manual |
+| Kehadiran | Ya | Ya | tetamu/guru/admin | Kod paparan awal + penapis siap; menunggu semakan produksi |
+| Laporan | Ya | Ya + fail | tetamu/guru/admin | Kod senarai awal + penapis siap; menunggu semakan produksi |
+| Pencapaian | Ya | Ya | tetamu/guru/admin | Token tetamu dan carian diperbetulkan; menunggu semakan produksi |
 | Penilaian | Ya | Ya | guru/admin | Belum disahkan manual |
 | Admin | Ya | Ya | admin sahaja | Import murid gagal `Failed to fetch`; pembetulan disediakan, belum diuji |
 | Setup | Ya | Ya | keadaan belum setup | Belum disahkan manual |
@@ -546,6 +564,7 @@ mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
+| 24 Ogos 2026 | Semua panggilan halaman menggunakan `AKSI.token()`; Kehadiran dan Laporan memaparkan senarai sebelum penapis dipilih; Pencapaian memuat rekod tetamu dan menghalang autofill carian | Semua skrip sebaris HTML lulus semakan sintaks; tiada lagi bacaan token sesi terus dalam `docs/*.html` | Terbitkan GitHub Pages dan sahkan tiga halaman produksi sebagai tetamu |
 | 24 Ogos 2026 | Logout tidak lagi menunggu backend; pembatalan token menggunakan `keepalive`; had masa API/loading ditambah; URL aset diberi versi untuk memintas cache | GitHub Pages run #19 berjaya; fail produksi sepadan; sintaks JS dan ujian logout automatik lulus; dashboard tetamu memuat data tanpa ralat | Sahkan sekali dengan akaun guru sebenar bahawa sidebar bertukar kepada Mod lihat sahaja selepas logout |
 | 21 Ogos 2026 | Blueprint diwujudkan; status dokumentasi diselaraskan | Semua halaman/aset HTTP 200; API CORS, padanan fail dan sintaks JS disahkan | Ujian log masuk sebenar |
 | 23 Ogos 2026 | Mod tetamu; log masuk dalam halaman gaya SEMAK; dropdown nama guru; tukar kata laluan admin/guru dalam Tetapan; kebenaran dipusatkan dalam `Kebenaran.gs`; `getTetapan` ditutup dari web; IC dilindungi daripada tetamu | 37 ujian kebenaran (Node) + 26 ujian pelayar (Playwright) lulus; 7 halaman dimuat dalam mod tetamu tanpa ralat JS dan tanpa kawalan tulis kelihatan | Pasang di Apps Script, buang `doPost` lama dari `Code.gs`, tekan Segerak Akaun Guru |

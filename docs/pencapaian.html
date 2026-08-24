@@ -37,6 +37,7 @@
           <input type="text" id="tapis-cari"
                  class="form-input-kecil"
                  placeholder="🔍 Cari nama murid..."
+                 autocomplete="off"
                  oninput="tapishPencapaian()">
         </div>
         <button class="btn-tambah"
@@ -192,9 +193,9 @@
 
     </div>
 
-      <script src="js/config.js?v=20260824-1"></script>
-  <script src="js/api.js?v=20260824-1"></script>
-  <script src="js/app.js?v=20260824-1"></script>
+      <script src="js/config.js?v=20260824-2"></script>
+  <script src="js/api.js?v=20260824-2"></script>
+  <script src="js/app.js?v=20260824-2"></script>
     <script>
 
       let senaraiPencapaianSemua = [];
@@ -223,7 +224,7 @@
               select.appendChild(opt);
             });
           })
-          .getSenaraiGuru(sessionStorage.getItem('token'));
+          .getSenaraiGuru(AKSI.token());
       }
 
       function muatPencapaian() {
@@ -239,7 +240,7 @@
           })
           .getSenaraiPencapaian(
             { peringkat: peringkat },
-            sessionStorage.getItem('token')
+            AKSI.token()
           );
       }
 
@@ -343,7 +344,7 @@
             })
             .getSenaraiMurid(
               { status: 'AKTIF', carian: carian },
-              sessionStorage.getItem('token')
+              AKSI.token()
             );
         }, 400);
       }
@@ -474,7 +475,7 @@
               tunjukToast(hasil.mesej, 'ralat');
             }
           })
-          .tambahPencapaian(data, sessionStorage.getItem('token'));
+          .tambahPencapaian(data, AKSI.token());
       }
 
       function padamPencapaian(id, nama) {
@@ -491,7 +492,7 @@
               tunjukToast(hasil.mesej, 'ralat');
             }
           })
-          .padamPencapaian(id, sessionStorage.getItem('token'));
+          .padamPencapaian(id, AKSI.token());
       }
 
     </script>

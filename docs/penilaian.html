@@ -134,9 +134,9 @@
 
     </div>
 
-      <script src="js/config.js?v=20260824-1"></script>
-  <script src="js/api.js?v=20260824-1"></script>
-  <script src="js/app.js?v=20260824-1"></script>
+      <script src="js/config.js?v=20260824-2"></script>
+  <script src="js/api.js?v=20260824-2"></script>
+  <script src="js/app.js?v=20260824-2"></script>
     <script>
 
       let mod = 'murid';
@@ -220,7 +220,7 @@
             }
           })
           .getSenaraiIkutKelas(kelas,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function muatMurid() {
@@ -250,7 +250,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .getAnggaranMurid(ic,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function labelSumber(sumber) {
@@ -467,7 +467,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .getAnggaranKelas(kelas,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function renderKelas(data) {

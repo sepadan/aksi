@@ -22,9 +22,9 @@
         <p>Rekod kehadiran murid semasa perjumpaan</p>
       </div>
 
-      <!-- Pilih Kelab -->
+      <!-- Penapis senarai -->
       <div class="kad" id="panel-pilih-kelab">
-        <h3 class="seksyen-tajuk">Sila Pilih</h3>
+        <h3 class="seksyen-tajuk">Tapis Senarai</h3>
 
         <div class="form-group">
           <label>Kategori</label>
@@ -42,14 +42,13 @@
           <label id="label-jenis">Semua Kategori</label>
           <select id="pilih-kelab" class="form-input"
                   onchange="muatPerjumpaan()">
-            <option value="">-- Pilih --</option>
+            <option value="">-- Semua Kelab --</option>
           </select>
         </div>
       </div>
 
       <!-- Senarai Perjumpaan -->
-      <div class="kad" id="panel-perjumpaan" 
-           style="display:none">
+      <div class="kad" id="panel-perjumpaan">
         <div class="flex-antara">
           <h3 class="seksyen-tajuk" 
               style="margin-bottom:0">
@@ -91,7 +90,7 @@
 
         <div id="senarai-perjumpaan-kelab" 
              class="senarai-item" style="margin-top:16px">
-          <p class="tiada-data">Pilih kelab dahulu.</p>
+          <p class="tiada-data">Memuatkan senarai perjumpaan...</p>
         </div>
       </div>
 
@@ -151,12 +150,13 @@
 
     </div>
 
-      <script src="js/config.js?v=20260824-1"></script>
-  <script src="js/api.js?v=20260824-1"></script>
-  <script src="js/app.js?v=20260824-1"></script>
+      <script src="js/config.js?v=20260824-2"></script>
+  <script src="js/api.js?v=20260824-2"></script>
+  <script src="js/app.js?v=20260824-2"></script>
     <script>
 
       let senaraiKelab = [];
+      let senaraiPerjumpaanSemua = [];
       let idKelabDipilih = '';
       let idPerjumpaanDipilih = '';
       let dataKehadiranSemasa = [];
@@ -173,8 +173,10 @@
           .withSuccessHandler(function(data) {
             senaraiKelab = data || [];
             tapishKelab();
+            muatSemuaPerjumpaan();
           })
-          .getSenaraiKelab(sessionStorage.getItem('token'));
+          .withFailureHandler(kendaliRalat)
+          .getSenaraiKelab(AKSI.token());
       }
 
       const LABEL_KATEGORI = {
@@ -189,12 +191,13 @@
         const kategori = document.getElementById('pilih-kategori')
                                  .value;
         const select = document.getElementById('pilih-kelab');
+        const pilihanLama = select.value;
 
         const label = LABEL_KATEGORI[kategori] ||
           'Semua Kategori';
         document.getElementById('label-jenis')
                 .textContent = label;
-        select.innerHTML = '<option value="">-- Pilih ' +
+        select.innerHTML = '<option value="">-- Semua ' +
           label + ' --</option>';
 
         senaraiKelab
@@ -205,36 +208,79 @@
             opt.textContent = k.nama;
             select.appendChild(opt);
           });
+
+        select.value = pilihanLama;
+        idKelabDipilih = select.value;
+        paparSenaraiPerjumpaan();
       }
 
       function muatPerjumpaan() {
         idKelabDipilih = document.getElementById('pilih-kelab').value;
-        if (!idKelabDipilih) {
-          document.getElementById('panel-perjumpaan')
-                  .style.display = 'none';
+        document.getElementById('panel-kehadiran')
+                .style.display = 'none';
+        paparSenaraiPerjumpaan();
+      }
+
+      function dapatkanPerjumpaanKelab(kelab) {
+        return new Promise(function(resolve) {
+          google.script.run
+            .withSuccessHandler(function(data) {
+              resolve((data || []).map(function(p) {
+                return Object.assign({}, p, {
+                  idKelab: kelab.id,
+                  namaKelab: kelab.nama,
+                  kategori: kelab.kategori
+                });
+              }));
+            })
+            .withFailureHandler(function() { resolve([]); })
+            .getPerjumpaanKelab(kelab.id, AKSI.token());
+        });
+      }
+
+      async function muatSemuaPerjumpaan() {
+        const div = document.getElementById('senarai-perjumpaan-kelab');
+        div.innerHTML = '<p class="tiada-data">Memuatkan senarai perjumpaan...</p>';
+        tunjukLoading(true);
+
+        try {
+          const semua = [];
+          // Hadkan kepada empat permintaan serentak supaya backend stabil.
+          for (let i = 0; i < senaraiKelab.length; i += 4) {
+            const kelompok = await Promise.all(
+              senaraiKelab.slice(i, i + 4).map(dapatkanPerjumpaanKelab)
+            );
+            kelompok.forEach(function(data) {
+              semua.push.apply(semua, data);
+            });
+          }
+          senaraiPerjumpaanSemua = semua.sort(function(a, b) {
+            return new Date(b.tarikh) - new Date(a.tarikh);
+          });
+          paparSenaraiPerjumpaan();
+        } finally {
+          tunjukLoading(false);
+        }
+      }
+
+      function paparSenaraiPerjumpaan() {
+        const div = document.getElementById('senarai-perjumpaan-kelab');
+        if (!div) return;
+        const kategori = document.getElementById('pilih-kategori').value;
+        const data = senaraiPerjumpaanSemua.filter(function(p) {
+          return (!kategori || p.kategori === kategori) &&
+            (!idKelabDipilih || p.idKelab === idKelabDipilih);
+        });
+
+        if (data.length === 0) {
+          div.innerHTML = '<p class="tiada-data">Tiada perjumpaan untuk penapis ini.</p>';
           return;
         }
 
-        document.getElementById('panel-perjumpaan')
-                .style.display = 'block';
-        document.getElementById('panel-kehadiran')
-                .style.display = 'none';
-
-        google.script.run
-          .withSuccessHandler(function(data) {
-            const div = document.getElementById(
-              'senarai-perjumpaan-kelab'
-            );
-
-            if (!data || data.length === 0) {
-              div.innerHTML = '<p class="tiada-data">' +
-                'Tiada perjumpaan. Buat perjumpaan baru.</p>';
-              return;
-            }
-
-            div.innerHTML = data.map(p => `
+        div.innerHTML = data.map(p => `
               <div class="item-baris">
                 <div class="item-kiri">
+                  <span class="badge">${p.namaKelab}</span>
                   <strong>${formatTarikh(p.tarikh)}</strong>
                   <span class="tempat-text">📍 ${p.tempat}</span>
                   <span class="masa-text">👥 ${p.hadir}/${p.jumlah} hadir</span>
@@ -245,14 +291,14 @@
                     style="cursor:pointer"
                     title="${p.adaLaporan ?
                       'Lihat laporan' : 'Isi laporan sekarang'}"
-                    onclick="pergiKeLaporan('${p.id}')">
+                    onclick="pergiKeLaporan('${p.id}', '${p.idKelab}')">
                     ${p.adaLaporan ? '📝 Ada Laporan' : 
                       '⏳ Belum Ada Laporan'}
                   </span>
                   <button class="btn-kecil"
                     onclick="bukaPerjumpaan('${p.id}', 
                     '${formatTarikh(p.tarikh)}', 
-                    '${p.tempat}')">
+                    '${p.tempat}', '${p.idKelab}')">
                     Kehadiran
                   </button>
                   ${isAdmin() ? `
@@ -265,9 +311,7 @@
                 </div>
               </div>
             `).join('');
-          })
-          .getPerjumpaanKelab(idKelabDipilih,
-            sessionStorage.getItem('token'));
+        AKSI.sapuKawalanTulis();
       }
 
       function padamPerjumpaanAdmin(id, tarikh) {
@@ -286,7 +330,7 @@
                 'berjaya');
               document.getElementById('panel-kehadiran')
                       .style.display = 'none';
-              muatPerjumpaan();
+              muatSemuaPerjumpaan();
             } else {
               tunjukToast(hasil.mesej, 'ralat');
             }
@@ -296,20 +340,24 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .padamPerjumpaan(id,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       // Klik badge laporan → terus ke halaman Laporan
       // dengan kelab & perjumpaan ini dipilih automatik
-      function pergiKeLaporan(idPerjumpaan) {
+      function pergiKeLaporan(idPerjumpaan, idKelab) {
         sessionStorage.setItem('autoLaporKelab',
-          idKelabDipilih);
+          idKelab || idKelabDipilih);
         sessionStorage.setItem('autoLaporPerjumpaan',
           idPerjumpaan);
         pergiHalaman('Laporan');
       }
 
       function tunjukFormPerjumpaan() {
+        if (!idKelabDipilih) {
+          tunjukToast('Pilih satu kelab sebelum membuat perjumpaan.', 'ralat');
+          return;
+        }
         document.getElementById('form-perjumpaan')
                 .style.display = 'block';
         // Set tarikh default hari ini
@@ -342,7 +390,7 @@
             if (hasil.berjaya) {
               tunjukToast('Perjumpaan berjaya dibuat!', 'berjaya');
               batalFormPerjumpaan();
-              muatPerjumpaan();
+              muatSemuaPerjumpaan();
             } else {
               tunjukToast(hasil.mesej, 'ralat');
             }
@@ -352,11 +400,12 @@
             tarikh: tarikh,
             masa: masa,
             tempat: tempat
-          }, sessionStorage.getItem('token'));
+          }, AKSI.token());
       }
 
-      function bukaPerjumpaan(id, tarikh, tempat) {
+      function bukaPerjumpaan(id, tarikh, tempat, idKelab) {
         idPerjumpaanDipilih = id;
+        idKelabDipilih = idKelab || idKelabDipilih;
 
         document.getElementById('panel-kehadiran')
                 .style.display = 'block';
@@ -372,7 +421,7 @@
             modEditKehadiran = false;
             paparKehadiran();
           })
-          .getKehadiran(id, sessionStorage.getItem('token'));
+          .getKehadiran(id, AKSI.token());
       }
 
       const LABEL_STATUS = {
@@ -458,7 +507,7 @@
             paparKehadiran();
           })
           .getKehadiran(idPerjumpaanDipilih,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function renderKehadiran() {
@@ -524,7 +573,7 @@
               // Auto kembali ke senarai perjumpaan
               document.getElementById('panel-kehadiran')
                       .style.display = 'none';
-              muatPerjumpaan();
+              muatSemuaPerjumpaan();
             } else {
               tunjukToast(hasil.mesej, 'ralat');
             }
@@ -532,7 +581,7 @@
           .simpanKehadiran(
             idPerjumpaanDipilih,
             dataKehadiranSemasa,
-            sessionStorage.getItem('token')
+            AKSI.token()
           );
       }
 

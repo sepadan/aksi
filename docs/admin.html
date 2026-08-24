@@ -487,9 +487,9 @@
 
     </div>
 
-      <script src="js/config.js?v=20260824-1"></script>
-  <script src="js/api.js?v=20260824-1"></script>
-  <script src="js/app.js?v=20260824-1"></script>
+      <script src="js/config.js?v=20260824-2"></script>
+  <script src="js/api.js?v=20260824-2"></script>
+  <script src="js/app.js?v=20260824-2"></script>
     <script>
 
       var csvMurid = '';
@@ -548,7 +548,7 @@
               }
             })
             .getSenaraiJenisKoku(
-              sessionStorage.getItem('token'));
+              AKSI.token());
 
           // Muat senarai kelab & guru
           muatSenaraiKelabAdmin();
@@ -712,7 +712,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .importMurid(csvMurid,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       // ===== TEMPLATE KOKU =====
@@ -745,7 +745,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .exportTemplateKoku(
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       // ===== IMPORT KOKU =====
@@ -851,7 +851,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .importKeahlian(csvKoku,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       // ===== URUS KELAB =====
@@ -937,7 +937,7 @@
             }).join('');
           })
           .getSenaraiKelabPenuh(
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function tukarJenisKoku(id, jenis) {
@@ -956,7 +956,7 @@
             muatSenaraiKelabAdmin();
           })
           .tukarJenisKelab(id, jenis,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function simpanKelabBaru() {
@@ -996,7 +996,7 @@
               'kelab-jenis').value,
             guru1: '',
             guru2: ''
-          }, sessionStorage.getItem('token'));
+          }, AKSI.token());
       }
 
       function togolKelab(id) {
@@ -1014,7 +1014,7 @@
             }
           })
           .togolStatusKelab(id,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function padamKelabAdmin(id, nama) {
@@ -1038,7 +1038,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .padamKelab(id,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       // ===== URUS GURU =====
@@ -1074,7 +1074,7 @@
             }).join('');
           })
           .getSenaraiGuru(
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function simpanGuruBaru() {
@@ -1099,7 +1099,7 @@
             }
           })
           .tambahGuru(nama, '',
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function templateGuruCSV() {
@@ -1161,7 +1161,7 @@
                 'ralat');
             })
             .importGuru(senarai,
-              sessionStorage.getItem('token'));
+              AKSI.token());
         };
         reader.readAsText(fail);
         event.target.value = '';
@@ -1183,7 +1183,7 @@
             }
           })
           .padamGuru(id,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       // ===== LOGO =====
@@ -1248,7 +1248,7 @@
                   .textContent = '❌ ' + e2.message;
               })
               .simpanLogo(dataUrl,
-                sessionStorage.getItem('token'));
+                AKSI.token());
           };
           img.src = e.target.result;
         };
@@ -1414,7 +1414,7 @@
             }
           })
           .getStatusArkib(
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function tutupTahun() {
@@ -1476,7 +1476,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .tutupTahunAkademik(tahunBaru,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function backupSekarang() {
@@ -1497,7 +1497,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .buatBackupManual(
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
       function togolBackupAuto(el) {
@@ -1518,7 +1518,7 @@
             tunjukToast('Ralat: ' + e.message, 'ralat');
           })
           .togolBackupAutomatik(aktif,
-            sessionStorage.getItem('token'));
+            AKSI.token());
       }
 
     </script>

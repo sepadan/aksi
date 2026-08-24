@@ -15,7 +15,7 @@ tiada pilihan folder lain. Sebab itu ia dinamakan `docs`, bukan `web`.
 | `js/app.js` | sidebar, sesi, toast — ganti `Script.html` + `renderSidebar()` |
 
 Halaman dalam (`dashboard.html`, `keahlian.html`, dan lain-lain)
-belum dibina — itu Fasa 3 dan seterusnya.
+sudah tersedia dalam folder ini.
 
 ## Cara halaman dalam akan berfungsi
 
@@ -23,14 +23,16 @@ belum dibina — itu Fasa 3 dan seterusnya.
 <div id="rangka"></div>
 <div class="kandungan"> … isi halaman … </div>
 
-<script src="js/config.js?v=20260824-1"></script>
-<script src="js/api.js?v=20260824-1"></script>
-<script src="js/app.js?v=20260824-1"></script>
+<script src="js/config.js?v=20260824-2"></script>
+<script src="js/api.js?v=20260824-2"></script>
+<script src="js/app.js?v=20260824-2"></script>
 <script>
-  var token = initHalaman('Dashboard');   // null jika sesi tiada
+  var token = initHalaman('Dashboard');   // TETAMU jika belum log masuk
   if (token) { /* muat data halaman */ }
 </script>
 ```
 
 `initHalaman()` menyemak sesi, melukis sidebar, menandakan nav aktif,
-dan memuatkan nama sekolah. Kalau tiada token ia terus ke `index.html`.
+dan memuatkan nama sekolah. Tanpa log masuk ia menggunakan token baca sahaja
+`TETAMU`; panggilan halaman mesti menggunakan `AKSI.token()` dan bukan membaca
+`sessionStorage` secara terus.
