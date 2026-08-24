@@ -14,7 +14,7 @@ Sistem pengurusan kokurikulum SK Paya Redan.
 ```
 *.gs  *.html          kod Apps Script — sumber rasmi, di akar repo
 docs/                 aplikasi web, dihidangkan oleh GitHub Pages
-  index.html          log masuk
+  index.html          dashboard dan log masuk dalam halaman
   dashboard.html  senarai.html
   keahlian.html   kehadiran.html  laporan.html
   pencapaian.html penilaian.html
@@ -23,6 +23,11 @@ docs/                 aplikasi web, dihidangkan oleh GitHub Pages
   js/config.js        URL /exec — satu-satunya tempat ia ditetapkan
   js/api.js           shim: google.script.run → fetch POST
   js/app.js           sesi, sidebar, navigasi
+  js/pwa.js           pemasangan + semakan kemas kini automatik
+  manifest.webmanifest
+  service-worker.js   cache cangkerang statik sahaja
+  offline.html        mesej apabila tiada internet
+  icons/              ikon AKSI untuk Android, iOS dan pelayar
 ```
 
 ## Bagaimana aplikasi web berfungsi
@@ -37,6 +42,11 @@ Antara muka pula dihidangkan sebagai fail statik dari GitHub Pages.
 `Content-Type: text/plain` supaya tiada preflight CORS. Kesannya, setiap
 halaman masih memanggil `google.script.run` seperti biasa — tiada satu pun
 panggilan perlu ditulis semula.
+
+**Versi semasa:** `AKSI v1.2.0 · PWA`. Aplikasi boleh ditambah ke homescreen
+Android/iPhone. Setiap kali dibuka, ia menyemak Service Worker baharu dan
+mengemas kini sendiri tanpa perlu dipasang semula. Cache dihadkan kepada HTML,
+CSS, JavaScript dan ikon; jawapan API, token serta data murid tidak dicache.
 
 **Status:** log masuk dari GitHub Pages disahkan berfungsi pada 23 Ogos 2026.
 Halaman selebihnya sudah dibina dan menunggu pengesahan operasi baca/tulis —

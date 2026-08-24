@@ -26,6 +26,7 @@ Keadaan semasa:
 | Halaman baca | Diuji separa | Dashboard disahkan memaparkan data sebenar |
 | Halaman tulis | Kod siap | ujian data sebenar belum disahkan |
 | Admin dan Setup | Kod siap | ujian akaun sebenar belum disahkan |
+| PWA | Siap, menunggu produksi | manifest, ikon, Service Worker, luar talian dan auto-kemas kini lulus ujian tempatan |
 | Pembuangan frontend lama | Belum | jangan buat sebelum semua ujian lulus |
 
 Pilihan log masuk yang telah dilaksanakan ialah mengekalkan akaun kongsi
@@ -48,6 +49,7 @@ Sign-In tanpa keputusan baharu daripada pemilik projek.
 ```text
 Pelayar guru
   -> GitHub Pages: /docs/*.html
+  -> Service Worker: cache cangkerang statik + semak kemas kini setiap buka
   -> docs/js/api.js menukar google.script.run kepada fetch JSON
   -> URL backend tunggal dalam docs/js/config.js
   -> Google Apps Script doPost(e)
@@ -66,6 +68,8 @@ Peraturan penting:
 - `getSidebarData(token)` memerlukan sesi sah.
 - URL deployment Apps Script hanya boleh ditetapkan dalam
   `docs/js/config.js`.
+- Service Worker hanya mengendalikan permintaan GET daripada asal GitHub Pages
+  sendiri. Permintaan Apps Script, token dan data sekolah tidak boleh dicache.
 
 ## 3. Fail penting
 
@@ -80,6 +84,11 @@ Peraturan penting:
 | `docs/js/config.js` | URL `/exec` dan versi frontend |
 | `docs/js/api.js` | adapter panggilan Apps Script kepada `fetch` |
 | `docs/js/app.js` | sesi, sidebar, navigasi, logout, toast |
+| `docs/js/pwa.js` | pendaftaran Service Worker dan semakan kemas kini setiap kali aplikasi dibuka |
+| `docs/manifest.webmanifest` | identiti pemasangan PWA, warna, ikon dan pintasan |
+| `docs/service-worker.js` | cache cangkerang statik, buang cache versi lama, halaman luar talian |
+| `docs/offline.html` | mesej apabila rangka tersedia tetapi data memerlukan internet |
+| `docs/icons/` | ikon AKSI 32, 48, 180, 192 dan 512 piksel |
 | `docs/*.html` | halaman aplikasi baharu |
 | `patch-apps-script/` | salinan patch dalam folder kerja lama; bukan struktur repo rasmi |
 
@@ -194,6 +203,7 @@ Rangka setiap halaman dalam:
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
+<script src="js/pwa.js"></script>
 <script>
   var token = initHalaman('Dashboard');   // null jika sesi tiada
 </script>
@@ -357,21 +367,29 @@ butang yang pasti gagal. Perlindungan sebenar ialah `doPost`.
 - Tetamu tidak menerima butang tambah, isi, edit atau padam. Backend terus
   menolak panggilan tulis walaupun seseorang cuba memanggilnya secara manual.
 
-### 7d. Menu mudah alih dan keputusan PWA — 24 Ogos 2026
+### 7d. Menu mudah alih dan PWA — 24 Ogos 2026
 
 - Sidebar mudah alih mempunyai butang tutup `×` bersaiz sentuhan 44×44 piksel.
   Ia juga ditutup apabila pengguna menekan kawasan gelap di luar menu, menekan
   `Escape`, atau memilih pautan navigasi.
 - Ketika menu terbuka, skrol kandungan latar dikunci dan atribut
   `aria-expanded` dikemas kini supaya keadaan menu boleh difahami pembaca skrin.
-- AKSI **sesuai dijadikan PWA**, tetapi belum merupakan PWA lengkap. HTTPS dan
-  reka letak responsif sudah ada; yang masih tiada ialah Web App Manifest,
-  ikon 192/512 + `apple-touch-icon`, pendaftaran Service Worker dan halaman
-  luar talian.
-- Strategi PWA yang selamat ialah cache **cangkerang statik sahaja** (HTML,
-  CSS, JS dan ikon). Jangan cache jawapan API, data murid, token, laporan atau
-  operasi tulis. Apabila tiada internet, paparkan mesej luar talian dan jangan
-  cuba menyimpan perubahan untuk disegerakkan kemudian.
+- AKSI kini PWA lengkap bernama `AKSI — Aplikasi Kokurikulum SK Paya Redan`,
+  versi paparan `AKSI v1.2.0 · PWA`. Ikon baharu menggunakan lambang sekolah
+  dengan lencana biru `AKSI`, dan digunakan pada sidebar, homescreen Android,
+  ikon maskable, `apple-touch-icon` serta favicon.
+- `manifest.webmanifest`, `pwa.js`, `service-worker.js` dan `offline.html`
+  dipasang pada semua halaman. Service Worker memanggil `skipWaiting()` dan
+  `clients.claim()`; `pwa.js` menggunakan `updateViaCache: 'none'` serta
+  `registration.update()` setiap kali aplikasi dibuka. Pemasangan homescreen
+  mengambil versi baharu secara automatik tanpa perlu dipadam dan dipasang semula.
+- Cache dihadkan kepada **cangkerang statik sahaja** (HTML, CSS, JS dan ikon).
+  Permintaan silang asal ke Apps Script tidak dipintas, maka jawapan API, data
+  murid, token, laporan dan operasi tulis tidak disimpan. Mod luar talian hanya
+  menerangkan bahawa internet diperlukan; tiada cubaan menyegerakkan tulisan.
+- Setiap perubahan frontend mesti menaikkan kedua-dua ID binaan pada URL aset
+  dan `CACHE_VERSION` dalam `service-worker.js`. Jika satu sahaja dinaikkan,
+  aplikasi yang dipasang boleh menerima campuran fail lama dan baharu.
 
 ## 8. Pengesahan automatik terakhir
 
@@ -408,6 +426,11 @@ Pada 24 Ogos 2026:
   menu kembali tertutup selepas butang `×`, ketukan di luar menu dan kekunci
   `Escape`. GitHub Pages run #24 berjaya; ujian yang sama lulus pada produksi
   tanpa ralat JavaScript dan memuat CSS/JS versi `20260824-3`.
+- PWA v1.2.0 diuji pada pelayan tempatan dengan viewport 390×844. Status
+  pendaftaran mencapai `sedia`, manifest dan ikon AKSI dimuat, nombor versi
+  dipaparkan, semua 11 halaman mempunyai manifest + `pwa.js`, dan kesemua 27
+  aset cangkerang memberi HTTP 200. Pemeriksaan cache mengesahkan tiada alamat
+  Apps Script/API dalam senarai cache. Penerbitan produksi masih menunggu push.
 
 Pengesahan ini tidak membuktikan operasi baca/tulis setiap modul. Kata laluan
 tidak tersedia dan tidak patut direkod dalam repo.
@@ -499,6 +522,8 @@ Frontend:
   folder lain. Itu sebabnya namanya `docs`, bukan `web`.
 - Perubahan frontend diterbitkan selepas push ke `main` dan mungkin mengambil
   beberapa minit untuk muncul.
+- PWA yang sudah dipasang menyemak kemas kini pada setiap pembukaan. Naikkan ID
+  binaan URL aset dan `CACHE_VERSION` bersama-sama bagi setiap penerbitan.
 
 Backend:
 
@@ -562,6 +587,8 @@ mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
   sebelum `innerHTML`. Lima halaman lain dan `admin.html` ditukar secara
   mekanikal, jadi ia masih tiada ketiga-tiganya.
 - Folder kerja tempatan bukan klon Git, jadi `git diff` tidak tersedia.
+- PWA sengaja tidak menyediakan suntingan luar talian. Data operasi sentiasa
+  memerlukan internet supaya guru tidak melihat atau menghantar rekod lapuk.
 
 ## 14. Peraturan untuk sesi AI seterusnya
 
@@ -591,6 +618,7 @@ mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
+| 24 Ogos 2026 | PWA v1.2.0 lengkap: ikon AKSI berasaskan logo sekolah, manifest, ikon Android/iOS, Service Worker auto-kemas kini, halaman luar talian dan versi paparan baharu | Ujian tempatan 390×844: status PWA `sedia`, 11 halaman lengkap, 27 aset HTTP 200, API/data tidak dicache, menu `×` dan ketukan luar lulus | Tolak ke `main`, tunggu GitHub Pages, kemudian sahkan manifest/Service Worker/versi pada produksi dan satu pemasangan iPhone |
 | 24 Ogos 2026 | Menu mudah alih boleh ditutup melalui `×`, kawasan luar, `Escape` atau pautan; penilaian PWA direkodkan | GitHub Pages run #24 berjaya; produksi 390×844 lulus untuk tiga cara tutup, sasaran 44×44, tiada ralat JS; CSS/JS versi `20260824-3` | Sahkan sekali pada iPhone pengguna; jika PWA diteruskan, cache aset statik sahaja |
 | 24 Ogos 2026 | Semua panggilan halaman menggunakan `AKSI.token()`; Kehadiran dan Laporan memaparkan senarai sebelum penapis dipilih; Pencapaian memuat rekod tetamu dan menghalang autofill carian | GitHub Pages run #22 berjaya; produksi tetamu: 2 rekod Pencapaian, 17 pilihan kelab pada Kehadiran/Laporan, 0 kawalan tulis; API perjumpaan yang disemak membalas `ok:true` dengan 0 rekod | Sahkan paparan yang sama selepas log masuk guru/admin menggunakan akaun sebenar pemilik |
 | 24 Ogos 2026 | Logout tidak lagi menunggu backend; pembatalan token menggunakan `keepalive`; had masa API/loading ditambah; URL aset diberi versi untuk memintas cache | GitHub Pages run #19 berjaya; fail produksi sepadan; sintaks JS dan ujian logout automatik lulus; dashboard tetamu memuat data tanpa ralat | Sahkan sekali dengan akaun guru sebenar bahawa sidebar bertukar kepada Mod lihat sahaja selepas logout |

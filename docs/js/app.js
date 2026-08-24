@@ -284,7 +284,9 @@
     bekas.innerHTML =
       '<div class="sidebar" id="sidebar">' +
         '<div class="sidebar-header">' +
-          '<div class="sidebar-icon" id="sidebar-icon">🏫</div>' +
+          '<div class="sidebar-icon" id="sidebar-icon">' +
+            '<img src="icons/aksi-192.png" alt="AKSI">' +
+          '</div>' +
           '<div class="sidebar-nama">' +
             '<h3 id="sidebar-nama-sekolah"></h3>' +
             '<p id="sidebar-tahun"></p>' +
@@ -295,7 +297,8 @@
         '<nav class="sidebar-nav">' + nav + '</nav>' +
         '<div class="sidebar-footer">' + kaki +
           '<p style="text-align:center;font-size:10px;color:#999;' +
-          'margin:8px 0 0 0" id="versi-sistem"></p>' +
+          'margin:8px 0 0 0" id="versi-sistem">' +
+          esc(window.AKSI_VERSI || '') + '</p>' +
         '</div>' +
       '</div>' +
       '<button class="sidebar-latar" id="sidebar-latar" type="button" ' +
@@ -404,16 +407,10 @@
         lepaskanMenunggu(d);
         var nama = document.getElementById('sidebar-nama-sekolah');
         var tahun = document.getElementById('sidebar-tahun');
-        var ikon = document.getElementById('sidebar-icon');
         var versi = document.getElementById('versi-sistem');
         if (nama) nama.textContent = d.namaSekolah || '';
         if (tahun) tahun.textContent = 'TA ' + (d.tahunAkademik || '');
-        if (versi) versi.textContent = d.versi || window.AKSI_VERSI || '';
-        if (ikon && d.logo) {
-          ikon.innerHTML = '<img src="' + d.logo + '" style="width:42px;' +
-            'height:42px;object-fit:contain;border-radius:8px;' +
-            'background:#fff;padding:2px" alt="">';
-        }
+        if (versi) versi.textContent = window.AKSI_VERSI || d.versi || '';
         if (d.namaSekolah) {
           document.title = document.title.replace(/—.*$/, '').trim() +
             ' — ' + d.namaSekolah;

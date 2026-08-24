@@ -1,0 +1,55 @@
+{
+  "id": "./",
+  "name": "AKSI — Aplikasi Kokurikulum SK Paya Redan",
+  "short_name": "AKSI",
+  "description": "Aplikasi Kokurikulum Sekolah SK Paya Redan",
+  "lang": "ms",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#f0f4f8",
+  "theme_color": "#1a1a2e",
+  "orientation": "any",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "icons/aksi-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/aksi-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/aksi-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "index.html",
+      "icons": [{ "src": "icons/aksi-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Kehadiran",
+      "short_name": "Kehadiran",
+      "url": "kehadiran.html",
+      "icons": [{ "src": "icons/aksi-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Pencapaian",
+      "short_name": "Pencapaian",
+      "url": "pencapaian.html",
+      "icons": [{ "src": "icons/aksi-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
