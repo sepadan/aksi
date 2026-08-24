@@ -405,8 +405,9 @@ Pada 24 Ogos 2026:
   Ketiga-tiga halaman mempunyai sifar kawalan tambah/edit/padam yang kelihatan.
 - Menu mudah alih diuji pada viewport 390×844: butang `×` kelihatan dalam
   sidebar, latar gelap muncul, sasaran sentuhan berukuran 44×44, dan keadaan
-  menu kembali tertutup selepas butang `×` serta kekunci `Escape`. Ujian
-  produksi menunggu penerbitan GitHub Pages bagi perubahan ini.
+  menu kembali tertutup selepas butang `×`, ketukan di luar menu dan kekunci
+  `Escape`. GitHub Pages run #24 berjaya; ujian yang sama lulus pada produksi
+  tanpa ralat JavaScript dan memuat CSS/JS versi `20260824-3`.
 
 Pengesahan ini tidak membuktikan operasi baca/tulis setiap modul. Kata laluan
 tidak tersedia dan tidak patut direkod dalam repo.
@@ -590,7 +591,7 @@ mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
-| 24 Ogos 2026 | Menu mudah alih boleh ditutup melalui `×`, kawasan luar, `Escape` atau pautan; penilaian PWA direkodkan | Ujian responsif tempatan 390×844 dan semakan sintaks lulus; cache aset dinaikkan ke `20260824-3` | Terbitkan dan uji produksi pada telefon; jika PWA diteruskan, cache aset statik sahaja |
+| 24 Ogos 2026 | Menu mudah alih boleh ditutup melalui `×`, kawasan luar, `Escape` atau pautan; penilaian PWA direkodkan | GitHub Pages run #24 berjaya; produksi 390×844 lulus untuk tiga cara tutup, sasaran 44×44, tiada ralat JS; CSS/JS versi `20260824-3` | Sahkan sekali pada iPhone pengguna; jika PWA diteruskan, cache aset statik sahaja |
 | 24 Ogos 2026 | Semua panggilan halaman menggunakan `AKSI.token()`; Kehadiran dan Laporan memaparkan senarai sebelum penapis dipilih; Pencapaian memuat rekod tetamu dan menghalang autofill carian | GitHub Pages run #22 berjaya; produksi tetamu: 2 rekod Pencapaian, 17 pilihan kelab pada Kehadiran/Laporan, 0 kawalan tulis; API perjumpaan yang disemak membalas `ok:true` dengan 0 rekod | Sahkan paparan yang sama selepas log masuk guru/admin menggunakan akaun sebenar pemilik |
 | 24 Ogos 2026 | Logout tidak lagi menunggu backend; pembatalan token menggunakan `keepalive`; had masa API/loading ditambah; URL aset diberi versi untuk memintas cache | GitHub Pages run #19 berjaya; fail produksi sepadan; sintaks JS dan ujian logout automatik lulus; dashboard tetamu memuat data tanpa ralat | Sahkan sekali dengan akaun guru sebenar bahawa sidebar bertukar kepada Mod lihat sahaja selepas logout |
 | 21 Ogos 2026 | Blueprint diwujudkan; status dokumentasi diselaraskan | Semua halaman/aset HTTP 200; API CORS, padanan fail dan sintaks JS disahkan | Ujian log masuk sebenar |
