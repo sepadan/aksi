@@ -273,6 +273,11 @@ body {
   padding: 4px;
 }
 
+.btn-tutup-sidebar,
+.sidebar-latar {
+  display: none;
+}
+
 .butang-row {
   display: flex;
   gap: 12px;
@@ -1632,10 +1637,54 @@ body {
 
   .sidebar {
     transform: translateX(-100%);
+    width: min(280px, calc(100vw - 56px));
+    height: 100vh;
+    height: 100dvh;
+    z-index: 102;
   }
 
   .sidebar.buka {
     transform: translateX(0);
+  }
+
+  .btn-tutup-sidebar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-left: auto;
+    flex: 0 0 44px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font: 400 30px/1 Arial, sans-serif;
+    cursor: pointer;
+  }
+
+  .sidebar-latar {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 101;
+    border: 0;
+    padding: 0;
+    background: rgba(15, 23, 42, 0.48);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+
+  .sidebar-latar.buka {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  body.menu-sidebar-buka {
+    overflow: hidden;
   }
 
   .kandungan {

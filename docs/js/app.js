@@ -1,5 +1,5 @@
 // app.js — rangka bersama semua halaman AKSI di GitHub Pages.
-// v3 (23 Ogos 2026): mod tetamu.
+// v4 (24 Ogos 2026): menu mudah alih boleh ditutup dengan jelas.
 //
 // Sesiapa boleh membaca AKSI tanpa log masuk. Hanya guru dan admin
 // boleh menambah, mengubah atau memadam.
@@ -98,6 +98,7 @@
   var _guruDimuat = false;
 
   function bukaLogin(jenis) {
+    tutupSidebar();
     var panel = document.getElementById('panel-login');
     if (!panel) return;
     panel.classList.add('buka');
@@ -288,6 +289,8 @@
             '<h3 id="sidebar-nama-sekolah"></h3>' +
             '<p id="sidebar-tahun"></p>' +
           '</div>' +
+          '<button class="btn-tutup-sidebar" type="button" ' +
+          'onclick="tutupSidebar()" aria-label="Tutup menu">×</button>' +
         '</div>' +
         '<nav class="sidebar-nav">' + nav + '</nav>' +
         '<div class="sidebar-footer">' + kaki +
@@ -295,11 +298,16 @@
           'margin:8px 0 0 0" id="versi-sistem"></p>' +
         '</div>' +
       '</div>' +
+      '<button class="sidebar-latar" id="sidebar-latar" type="button" ' +
+      'onclick="tutupSidebar()" aria-label="Tutup menu"></button>' +
       '<div class="topbar">' +
-        '<button class="btn-menu" type="button" ' +
-        'onclick="togolSidebar()">☰</button>' +
+        '<button class="btn-menu" id="btn-menu" type="button" ' +
+        'onclick="togolSidebar()" aria-controls="sidebar" ' +
+        'aria-expanded="false" aria-label="Buka menu">☰</button>' +
         '<h2 id="topbar-tajuk"></h2>' +
       '</div>';
+
+    pasangKawalanSidebar();
   }
 
   // Sepanduk di atas kandungan — supaya sebab butang hilang itu jelas.
@@ -455,9 +463,41 @@
     return false;
   }
 
+  function tetapkanSidebar(terbuka) {
+    var s = document.getElementById('sidebar');
+    var latar = document.getElementById('sidebar-latar');
+    var btn = document.getElementById('btn-menu');
+    if (!s) return;
+    s.classList.toggle('buka', !!terbuka);
+    if (latar) latar.classList.toggle('buka', !!terbuka);
+    document.body.classList.toggle('menu-sidebar-buka', !!terbuka);
+    if (btn) {
+      btn.setAttribute('aria-expanded', terbuka ? 'true' : 'false');
+      btn.setAttribute('aria-label', terbuka ? 'Tutup menu' : 'Buka menu');
+    }
+  }
+
+  function tutupSidebar() {
+    tetapkanSidebar(false);
+  }
+
   function togolSidebar() {
     var s = document.getElementById('sidebar');
-    if (s) s.classList.toggle('buka');
+    tetapkanSidebar(!(s && s.classList.contains('buka')));
+  }
+
+  function pasangKawalanSidebar() {
+    var s = document.getElementById('sidebar');
+    if (!s) return;
+    s.querySelectorAll('.nav-item').forEach(function (pautan) {
+      pautan.addEventListener('click', tutupSidebar);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') tutupSidebar();
+    });
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 768) tutupSidebar();
+    });
   }
 
   // ---------- utiliti ----------
@@ -563,6 +603,7 @@
   window.logout = logout;
   window.pergiHalaman = pergiHalaman;
   window.togolSidebar = togolSidebar;
+  window.tutupSidebar = tutupSidebar;
   window.tunjukToast = tunjukToast;
   window.tunjukLoading = tunjukLoading;
   window.formatTarikh = formatTarikh;
