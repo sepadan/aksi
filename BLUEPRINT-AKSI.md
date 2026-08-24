@@ -26,7 +26,7 @@ Keadaan semasa:
 | Halaman baca | Diuji separa | Dashboard disahkan memaparkan data sebenar |
 | Halaman tulis | Kod siap | ujian data sebenar belum disahkan |
 | Admin dan Setup | Kod siap | ujian akaun sebenar belum disahkan |
-| PWA | Siap, menunggu produksi | manifest, ikon, Service Worker, luar talian dan auto-kemas kini lulus ujian tempatan |
+| PWA | Siap dan diterbitkan | GitHub Pages run #26; manifest, ikon, luar talian dan auto-kemas kini lulus produksi |
 | Pembuangan frontend lama | Belum | jangan buat sebelum semua ujian lulus |
 
 Pilihan log masuk yang telah dilaksanakan ialah mengekalkan akaun kongsi
@@ -426,11 +426,13 @@ Pada 24 Ogos 2026:
   menu kembali tertutup selepas butang `×`, ketukan di luar menu dan kekunci
   `Escape`. GitHub Pages run #24 berjaya; ujian yang sama lulus pada produksi
   tanpa ralat JavaScript dan memuat CSS/JS versi `20260824-3`.
-- PWA v1.2.0 diuji pada pelayan tempatan dengan viewport 390×844. Status
-  pendaftaran mencapai `sedia`, manifest dan ikon AKSI dimuat, nombor versi
-  dipaparkan, semua 11 halaman mempunyai manifest + `pwa.js`, dan kesemua 27
-  aset cangkerang memberi HTTP 200. Pemeriksaan cache mengesahkan tiada alamat
-  Apps Script/API dalam senarai cache. Penerbitan produksi masih menunggu push.
+- PWA v1.2.0 diuji pada pelayan tempatan dan produksi dengan viewport 390×844.
+  GitHub Pages run #26 berjaya untuk commit `3906178`; status pendaftaran
+  produksi mencapai `sedia`, manifest/ikon AKSI dan versi `AKSI v1.2.0 · PWA`
+  dimuat tanpa ralat JavaScript. Semua 11 halaman mempunyai manifest +
+  `pwa.js`, dan kesemua 27 aset cangkerang produksi memberi HTTP 200.
+  Pemeriksaan cache mengesahkan tiada alamat Apps Script/API. Ujian tanpa
+  pelayan turut membuktikan rangka cache dan halaman luar talian berfungsi.
 
 Pengesahan ini tidak membuktikan operasi baca/tulis setiap modul. Kata laluan
 tidak tersedia dan tidak patut direkod dalam repo.
@@ -618,7 +620,7 @@ mencuba semula, supaya tidak menjalankan operasi yang sama dua kali.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
-| 24 Ogos 2026 | PWA v1.2.0 lengkap: ikon AKSI berasaskan logo sekolah, manifest, ikon Android/iOS, Service Worker auto-kemas kini, halaman luar talian dan versi paparan baharu | Ujian tempatan 390×844: status PWA `sedia`, 11 halaman lengkap, 27 aset HTTP 200, API/data tidak dicache, menu `×` dan ketukan luar lulus | Tolak ke `main`, tunggu GitHub Pages, kemudian sahkan manifest/Service Worker/versi pada produksi dan satu pemasangan iPhone |
+| 24 Ogos 2026 | PWA v1.2.0 lengkap: ikon AKSI berasaskan logo sekolah, manifest, ikon Android/iOS, Service Worker auto-kemas kini, halaman luar talian dan versi paparan baharu | GitHub Pages run #26 berjaya; produksi 390×844 mencapai `sedia`, 27 aset HTTP 200, API/data tidak dicache, menu dan mod luar talian lulus | Sahkan rupa ikon melalui satu pemasangan sebenar pada iPhone pengguna |
 | 24 Ogos 2026 | Menu mudah alih boleh ditutup melalui `×`, kawasan luar, `Escape` atau pautan; penilaian PWA direkodkan | GitHub Pages run #24 berjaya; produksi 390×844 lulus untuk tiga cara tutup, sasaran 44×44, tiada ralat JS; CSS/JS versi `20260824-3` | Sahkan sekali pada iPhone pengguna; jika PWA diteruskan, cache aset statik sahaja |
 | 24 Ogos 2026 | Semua panggilan halaman menggunakan `AKSI.token()`; Kehadiran dan Laporan memaparkan senarai sebelum penapis dipilih; Pencapaian memuat rekod tetamu dan menghalang autofill carian | GitHub Pages run #22 berjaya; produksi tetamu: 2 rekod Pencapaian, 17 pilihan kelab pada Kehadiran/Laporan, 0 kawalan tulis; API perjumpaan yang disemak membalas `ok:true` dengan 0 rekod | Sahkan paparan yang sama selepas log masuk guru/admin menggunakan akaun sebenar pemilik |
 | 24 Ogos 2026 | Logout tidak lagi menunggu backend; pembatalan token menggunakan `keepalive`; had masa API/loading ditambah; URL aset diberi versi untuk memintas cache | GitHub Pages run #19 berjaya; fail produksi sepadan; sintaks JS dan ujian logout automatik lulus; dashboard tetamu memuat data tanpa ralat | Sahkan sekali dengan akaun guru sebenar bahawa sidebar bertukar kepada Mod lihat sahaja selepas logout |
