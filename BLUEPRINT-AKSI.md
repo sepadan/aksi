@@ -514,7 +514,9 @@ Pada 24 Ogos 2026:
   baca sahaja selepas lengah penerbitan memberi JSON `ok:true`; ujian tidak
   menulis rekod sekolah dan tidak mencetak nama atau IC. Dua suite Node turut
   mengesahkan sintaks, normalisasi IC, kunci tulis, tulisan pukal, pengawal
-  PAJSK, cache kelas dan pemilihan setempat.
+  PAJSK, cache kelas dan pemilihan setempat. Frontend/PWA commit `bcbfa08`
+  diterbitkan melalui GitHub Pages run #33; produksi memaparkan v1.3.0, cache
+  `20260826-8`, cache kelas memori dan tiada rujukan aset lama.
 
 Pengesahan ini tidak membuktikan operasi baca/tulis setiap modul. Kata laluan
 tidak tersedia dan tidak patut direkod dalam repo.
@@ -712,7 +714,7 @@ tindakan dicatat sebagai isu dalam hab; yang di sini diterima secara sedar.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
-| 26 Ogos 2026 | AKSI v1.3.0: normalisasi IC, LockService untuk kehadiran/penilaian/PAJSK, ID perjumpaan maksimum + 1, tulisan pukal, pengawal NaN dan satu muatan kelas untuk Penilaian | Apps Script Version 7 pada URL sama; dua suite Node lulus; endpoint produksi JSON `ok:true`; pilihan nama selepas kelas dimuat tidak membuat panggilan rangkaian | Sahkan satu operasi tulis sebenar dengan akaun guru ketika sekolah bersedia; cold start Apps Script tidak boleh dijamin di bawah 3 saat |
+| 26 Ogos 2026 | AKSI v1.3.0: normalisasi IC, LockService untuk kehadiran/penilaian/PAJSK, ID perjumpaan maksimum + 1, tulisan pukal, pengawal NaN dan satu muatan kelas untuk Penilaian | Apps Script Version 7 pada URL sama; dua suite Node lulus; endpoint produksi JSON `ok:true`; commit `bcbfa08` dan GitHub Pages run #33 berjaya; produksi menggunakan cache `20260826-8` | Sahkan satu operasi tulis sebenar dengan akaun guru ketika sekolah bersedia; cold start Apps Script tidak boleh dijamin di bawah 3 saat |
 | 26 Ogos 2026 | Pencapaian v1.2.1: baiki pilihan nama berapostrof/aksara khas, selamatkan paparan dinamik dan padam, pramuat senarai murid sekali lalu tapis setempat tanpa sela 400 ms | Ujian regresi Node lulus; GitHub Pages commit `526e884` dan Apps Script Version 6 diterbitkan; halaman/SW produksi HTTP 200, aset/cache `20260826-7`, event listener selamat dan tiada `onclick` pilihan murid dinamik | Sahkan sekali dengan akaun guru bahawa nama sebenar berapostrof boleh dipilih; tiada rekod pencapaian dibuat semasa ujian automatik |
 | 24 Ogos 2026 | PWA v1.2.0 lengkap: ikon AKSI berasaskan logo sekolah, manifest, ikon Android/iOS, Service Worker auto-kemas kini, halaman luar talian dan versi paparan baharu | GitHub Pages run #26 berjaya; produksi 390×844 mencapai `sedia`, 27 aset HTTP 200, API/data tidak dicache, menu dan mod luar talian lulus | Sahkan rupa ikon melalui satu pemasangan sebenar pada iPhone pengguna |
 | 24 Ogos 2026 | Menu mudah alih boleh ditutup melalui `×`, kawasan luar, `Escape` atau pautan; penilaian PWA direkodkan | GitHub Pages run #24 berjaya; produksi 390×844 lulus untuk tiga cara tutup, sasaran 44×44, tiada ralat JS; CSS/JS versi `20260824-3` | Sahkan sekali pada iPhone pengguna; jika PWA diteruskan, cache aset statik sahaja |
