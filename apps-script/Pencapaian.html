@@ -57,6 +57,7 @@
             <input type="text" id="cari-murid"
                    class="form-input"
                    placeholder="🔍 Taip nama atau IC murid..."
+                   autocomplete="off"
                    oninput="cariMurid()">
             <div id="hasil-cari-murid" 
                  class="dropdown-cari"></div>
@@ -194,7 +195,8 @@
 
       let senaraiPencapaianSemua = [];
       let senaraiKelab = [];
-      let cariTimeout = null;
+      let senaraiMuridPencapaian = null;
+      let sedangMuatMuridPencapaian = false;
 
       document.addEventListener('DOMContentLoaded', function() {
         const token = semakSesiAktif();
@@ -205,6 +207,7 @@
 
         muatSenaraiGuru();
         muatPencapaian();
+        muatSenaraiMuridPencapaian();
       });
 
       function muatSenaraiGuru() {
@@ -217,6 +220,9 @@
               opt.textContent = g.nama;
               select.appendChild(opt);
             });
+          })
+          .withFailureHandler(function() {
+            tunjukToast('Senarai guru tidak dapat dimuatkan.', 'ralat');
           })
           .getSenaraiGuru(sessionStorage.getItem('token'));
       }
@@ -231,6 +237,10 @@
             tunjukLoading(false);
             senaraiPencapaianSemua = data || [];
             tapishPencapaian();
+          })
+          .withFailureHandler(function() {
+            tunjukLoading(false);
+            tunjukToast('Senarai pencapaian tidak dapat dimuatkan.', 'ralat');
           })
           .getSenaraiPencapaian(
             { peringkat: peringkat },
@@ -259,88 +269,132 @@
 
       function renderPencapaian(data) {
         const div = document.getElementById('senarai-pencapaian');
+        div.replaceChildren();
 
         if (data.length === 0) {
-          div.innerHTML = '<p class="tiada-data">' +
-            'Tiada rekod pencapaian.</p>';
+          div.appendChild(ciptaElemen('p', 'tiada-data',
+            'Tiada rekod pencapaian.'));
           return;
         }
 
-        div.innerHTML = data.map(p => `
-          <div class="pencapaian-baris">
-            <div class="pencapaian-kiri">
-              <div class="pencapaian-nama">
-                ${p.namaMurid}
-                <span class="kelas-badge">${p.kelasMurid}</span>
-              </div>
-              <div class="pencapaian-pertandingan">
-                ${p.namaPertandingan}
-              </div>
-              <div class="pencapaian-meta">
-                📅 ${formatTarikh(p.tarikh)} &nbsp;|&nbsp;
-                👨‍🏫 ${p.guruPengiring || '-'}
-              </div>
-            </div>
-            <div class="pencapaian-kanan">
-              <span class="badge-peringkat ${p.peringkat.toLowerCase()}">
-                ${p.peringkat}
-              </span>
-              <span class="badge-tempat">
-                🏆 ${p.tempat}
-              </span>
-              ${isAdmin() ? `
-              <button class="btn-padam"
-                onclick="padamPencapaian('${p.id}', 
-                  '${p.namaMurid}')">
-                🗑️
-              </button>` : ''}
-            </div>
-          </div>
-        `).join('');
+        data.forEach(function(p) {
+          const baris = ciptaElemen('div', 'pencapaian-baris');
+          const kiri = ciptaElemen('div', 'pencapaian-kiri');
+          const nama = ciptaElemen('div', 'pencapaian-nama');
+          nama.appendChild(document.createTextNode(String(p.namaMurid || '') + ' '));
+          nama.appendChild(ciptaElemen('span', 'kelas-badge', p.kelasMurid || ''));
+          kiri.appendChild(nama);
+          kiri.appendChild(ciptaElemen('div', 'pencapaian-pertandingan',
+            p.namaPertandingan || ''));
+          kiri.appendChild(ciptaElemen('div', 'pencapaian-meta',
+            '📅 ' + formatTarikh(p.tarikh) + ' | 👨‍🏫 ' + (p.guruPengiring || '-')));
+
+          const kanan = ciptaElemen('div', 'pencapaian-kanan');
+          const kelasPeringkat = String(p.peringkat || '').toLowerCase()
+            .replace(/[^a-z-]/g, '');
+          kanan.appendChild(ciptaElemen('span',
+            'badge-peringkat' + (kelasPeringkat ? ' ' + kelasPeringkat : ''),
+            p.peringkat || '-'));
+          kanan.appendChild(ciptaElemen('span', 'badge-tempat',
+            '🏆 ' + (p.tempat || '-')));
+          if (isAdmin()) {
+            const padam = ciptaElemen('button', 'btn-padam', '🗑️');
+            padam.type = 'button';
+            padam.setAttribute('aria-label', 'Padam pencapaian');
+            padam.addEventListener('click', function() {
+              padamPencapaian(p.id, p.namaMurid || 'murid ini');
+            });
+            kanan.appendChild(padam);
+          }
+          baris.appendChild(kiri);
+          baris.appendChild(kanan);
+          div.appendChild(baris);
+        });
       }
 
-      // Cari murid
+      function ciptaElemen(tag, kelas, teks) {
+        const unsur = document.createElement(tag);
+        if (kelas) unsur.className = kelas;
+        if (teks !== undefined) unsur.textContent = String(teks);
+        return unsur;
+      }
+
+      function paparMesejCariMurid(mesej, kelas) {
+        const div = document.getElementById('hasil-cari-murid');
+        div.replaceChildren(ciptaElemen('div',
+          'dropdown-item tiada' + (kelas ? ' ' + kelas : ''), mesej));
+      }
+
+      function muatSenaraiMuridPencapaian() {
+        if (senaraiMuridPencapaian || sedangMuatMuridPencapaian) return;
+        sedangMuatMuridPencapaian = true;
+        google.script.run
+          .withSuccessHandler(function(data) {
+            sedangMuatMuridPencapaian = false;
+            senaraiMuridPencapaian = (data || []).filter(function(m) {
+              return parseInt(m.tahun, 10) >= 3;
+            });
+            if (document.getElementById('cari-murid').value.trim().length >= 2) {
+              cariMurid();
+            }
+          })
+          .withFailureHandler(function() {
+            sedangMuatMuridPencapaian = false;
+            paparMesejCariMurid('Senarai murid gagal dimuatkan. Taip semula untuk cuba lagi.');
+          })
+          .getSenaraiMurid({ status: 'AKTIF' },
+            sessionStorage.getItem('token'));
+      }
+
+      // Cari murid dalam senarai yang telah dimuat sekali sahaja.
       function cariMurid() {
-        clearTimeout(cariTimeout);
-        const carian = document.getElementById('cari-murid')
-                               .value.trim();
+        const input = document.getElementById('cari-murid');
+        const carian = input.value.trim();
+        const div = document.getElementById('hasil-cari-murid');
 
         if (carian.length < 2) {
-          document.getElementById('hasil-cari-murid')
-                  .innerHTML = '';
+          div.replaceChildren();
           return;
         }
 
-        cariTimeout = setTimeout(function() {
-          google.script.run
-            .withSuccessHandler(function(data) {
-              const div = document.getElementById('hasil-cari-murid');
+        if (!senaraiMuridPencapaian) {
+          paparMesejCariMurid('Memuatkan senarai murid…');
+          muatSenaraiMuridPencapaian();
+          return;
+        }
 
-              if (!data || data.length === 0) {
-                div.innerHTML = '<div class="dropdown-item tiada">' +
-                  'Tiada murid dijumpai.</div>';
-                return;
-              }
+        const q = carian.toLocaleLowerCase('ms-MY');
+        const muridLayak = senaraiMuridPencapaian.filter(function(m) {
+          return String(m.nama || '').toLocaleLowerCase('ms-MY').includes(q) ||
+            String(m.ic || '').includes(carian);
+        }).slice(0, 30);
 
-              // Tapis Tahun 3-6 sahaja untuk pencapaian
-              const muridLayak = data.filter(m => 
-                parseInt(m.tahun) >= 3
-              );
+        div.replaceChildren();
+        if (!muridLayak.length) {
+          paparMesejCariMurid('Tiada murid dijumpai.');
+          return;
+        }
 
-              div.innerHTML = muridLayak.map(m => `
-                <div class="dropdown-item"
-                     onclick="pilihMurid('${m.ic}', 
-                       '${m.nama}', '${m.kelasLabel}')">
-                  <strong>${m.nama}</strong>
-                  <span>${m.kelasLabel} | ${m.ic}</span>
-                </div>
-              `).join('');
-            })
-            .getSenaraiMurid(
-              { status: 'AKTIF', carian: carian },
-              sessionStorage.getItem('token')
-            );
-        }, 400);
+        muridLayak.forEach(function(m) {
+          const item = ciptaElemen('div', 'dropdown-item');
+          item.tabIndex = 0;
+          item.setAttribute('role', 'button');
+          item.appendChild(ciptaElemen('strong', '', m.nama || ''));
+          item.appendChild(ciptaElemen('span', '',
+            (m.kelasLabel || '') + ' | ' + (m.ic || '')));
+          const pilih = function() {
+            pilihMurid(String(m.ic || ''), String(m.nama || ''),
+              String(m.kelasLabel || ''));
+          };
+          item.addEventListener('click', pilih);
+          item.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              pilih();
+            }
+          });
+          div.appendChild(item);
+        });
       }
 
       // ===== Murid dipilih (chip, boleh ramai) =====
@@ -348,15 +402,22 @@
       let guruPencapaian = [];
 
       function renderChipMurid() {
-        document.getElementById('chip-murid').innerHTML =
-          muridPencapaian.map((m, i) => `
-            <span class="badge" style="display:inline-flex;
-                  align-items:center; gap:6px">
-              ${m.nama} (${m.kelas})
-              <a style="cursor:pointer; font-weight:bold"
-                 onclick="buangMuridPencapaian(${i})">✕</a>
-            </span>
-          `).join('');
+        const div = document.getElementById('chip-murid');
+        div.replaceChildren();
+        muridPencapaian.forEach(function(m, i) {
+          const chip = ciptaElemen('span', 'badge',
+            m.nama + ' (' + m.kelas + ') ');
+          chip.style.display = 'inline-flex';
+          chip.style.alignItems = 'center';
+          chip.style.gap = '6px';
+          const buang = ciptaElemen('button', '', '✕');
+          buang.type = 'button';
+          buang.style.cssText = 'cursor:pointer;font-weight:bold;border:0;background:none';
+          buang.setAttribute('aria-label', 'Buang murid');
+          buang.addEventListener('click', function() { buangMuridPencapaian(i); });
+          chip.appendChild(buang);
+          div.appendChild(chip);
+        });
       }
 
       function pilihMurid(ic, nama, kelas) {
@@ -376,15 +437,21 @@
       }
 
       function renderChipGuruP() {
-        document.getElementById('chip-guru-pencapaian')
-          .innerHTML = guruPencapaian.map((n, i) => `
-            <span class="badge" style="display:inline-flex;
-                  align-items:center; gap:6px">
-              ${n}
-              <a style="cursor:pointer; font-weight:bold"
-                 onclick="buangGuruPencapaian(${i})">✕</a>
-            </span>
-          `).join('');
+        const div = document.getElementById('chip-guru-pencapaian');
+        div.replaceChildren();
+        guruPencapaian.forEach(function(n, i) {
+          const chip = ciptaElemen('span', 'badge', n + ' ');
+          chip.style.display = 'inline-flex';
+          chip.style.alignItems = 'center';
+          chip.style.gap = '6px';
+          const buang = ciptaElemen('button', '', '✕');
+          buang.type = 'button';
+          buang.style.cssText = 'cursor:pointer;font-weight:bold;border:0;background:none';
+          buang.setAttribute('aria-label', 'Buang guru pengiring');
+          buang.addEventListener('click', function() { buangGuruPencapaian(i); });
+          chip.appendChild(buang);
+          div.appendChild(chip);
+        });
       }
 
       function tambahGuruPencapaian() {
@@ -417,6 +484,7 @@
       function tunjukFormTambah() {
         document.getElementById('form-tambah')
                 .style.display = 'block';
+        muatSenaraiMuridPencapaian();
         document.getElementById('form-tambah')
                 .scrollIntoView({ behavior: 'smooth' });
       }
@@ -469,6 +537,10 @@
               tunjukToast(hasil.mesej, 'ralat');
             }
           })
+          .withFailureHandler(function() {
+            tunjukLoading(false);
+            tunjukToast('Pencapaian tidak dapat disimpan. Cuba lagi.', 'ralat');
+          })
           .tambahPencapaian(data, sessionStorage.getItem('token'));
       }
 
@@ -485,6 +557,10 @@
             } else {
               tunjukToast(hasil.mesej, 'ralat');
             }
+          })
+          .withFailureHandler(function() {
+            tunjukLoading(false);
+            tunjukToast('Rekod tidak dapat dipadam. Cuba lagi.', 'ralat');
           })
           .padamPencapaian(id, sessionStorage.getItem('token'));
       }

@@ -394,7 +394,7 @@ butang yang pasti gagal. Perlindungan sebenar ialah `doPost`.
 - Ketika menu terbuka, skrol kandungan latar dikunci dan atribut
   `aria-expanded` dikemas kini supaya keadaan menu boleh difahami pembaca skrin.
 - AKSI kini PWA lengkap bernama `AKSI — Aplikasi Kokurikulum SK Paya Redan`,
-  versi paparan `AKSI v1.2.0 · PWA`. Ikon baharu menggunakan lambang sekolah
+  versi paparan `AKSI v1.2.1 · PWA`. Ikon baharu menggunakan lambang sekolah
   dengan lencana biru `AKSI`, dan digunakan pada sidebar, homescreen Android,
   ikon maskable, `apple-touch-icon` serta favicon.
 - `manifest.webmanifest`, `pwa.js`, `service-worker.js` dan `offline.html`
@@ -409,6 +409,23 @@ butang yang pasti gagal. Perlindungan sebenar ialah `doPost`.
 - Setiap perubahan frontend mesti menaikkan kedua-dua ID binaan pada URL aset
   dan `CACHE_VERSION` dalam `service-worker.js`. Jika satu sahaja dinaikkan,
   aplikasi yang dipasang boleh menerima campuran fail lama dan baharu.
+
+### 7e. Pilihan murid Pencapaian yang selamat dan pantas — 26 Ogos 2026
+
+- Data murid atau pencapaian tidak boleh dimasukkan terus ke atribut
+  `onclick`. Nama yang mengandungi apostrof pernah memutuskan rentetan
+  JavaScript dan menyebabkan sesetengah murid tidak boleh dipilih.
+- Cadangan murid dibina menggunakan `textContent` dan `addEventListener`.
+  Kaedah sama digunakan untuk cip murid, cip guru dan tindakan padam supaya
+  aksara khas tidak mengubah kod atau struktur HTML.
+- Senarai murid aktif Tahun 3–6 dimuat **sekali** untuk guru/admin semasa
+  halaman dibuka dan disimpan dalam memori halaman sahaja. Setiap taipan
+  selepas itu menapis secara setempat tanpa menunggu panggilan rangkaian atau
+  sela 400 ms; maksimum 30 cadangan dipaparkan.
+- Senarai penuh tidak dipramuat untuk tetamu, tidak disimpan dalam cache PWA,
+  dan dibuang apabila halaman ditutup atau dimuat semula.
+- Semua panggilan pelayan utama Pencapaian mempunyai pengendali kegagalan agar
+  tirai memuat tidak tergantung tanpa mesej.
 
 ## 8. Pengesahan automatik terakhir
 
@@ -649,6 +666,7 @@ tindakan dicatat sebagai isu dalam hab; yang di sini diterima secara sedar.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
+| 26 Ogos 2026 | Pencapaian v1.2.1: baiki pilihan nama berapostrof/aksara khas, selamatkan paparan dinamik dan padam, pramuat senarai murid sekali lalu tapis setempat tanpa sela 400 ms | Ujian regresi Node lulus untuk GitHub Pages dan salinan Apps Script; sintaks skrip sebaris, versi aset dan cache PWA sepadan | Sahkan pilihan nama sebenar selepas GitHub Pages dan Apps Script selesai diterbitkan |
 | 24 Ogos 2026 | PWA v1.2.0 lengkap: ikon AKSI berasaskan logo sekolah, manifest, ikon Android/iOS, Service Worker auto-kemas kini, halaman luar talian dan versi paparan baharu | GitHub Pages run #26 berjaya; produksi 390×844 mencapai `sedia`, 27 aset HTTP 200, API/data tidak dicache, menu dan mod luar talian lulus | Sahkan rupa ikon melalui satu pemasangan sebenar pada iPhone pengguna |
 | 24 Ogos 2026 | Menu mudah alih boleh ditutup melalui `×`, kawasan luar, `Escape` atau pautan; penilaian PWA direkodkan | GitHub Pages run #24 berjaya; produksi 390×844 lulus untuk tiga cara tutup, sasaran 44×44, tiada ralat JS; CSS/JS versi `20260824-3` | Sahkan sekali pada iPhone pengguna; jika PWA diteruskan, cache aset statik sahaja |
 | 24 Ogos 2026 | Semua panggilan halaman menggunakan `AKSI.token()`; Kehadiran dan Laporan memaparkan senarai sebelum penapis dipilih; Pencapaian memuat rekod tetamu dan menghalang autofill carian | GitHub Pages run #22 berjaya; produksi tetamu: 2 rekod Pencapaian, 17 pilihan kelab pada Kehadiran/Laporan, 0 kawalan tulis; API perjumpaan yang disemak membalas `ok:true` dengan 0 rekod | Sahkan paparan yang sama selepas log masuk guru/admin menggunakan akaun sebenar pemilik |
