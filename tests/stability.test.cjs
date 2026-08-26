@@ -10,6 +10,14 @@ const code = read('apps-script', 'Code.gs');
 const attendance = read('apps-script', 'Kehadiranbackend.gs');
 const assessment = read('apps-script', 'PenilaianBackend.gs');
 const pajsk = read('apps-script', 'PAJSKBackend.gs');
+const report = read('apps-script', 'Laporanbackend.gs');
+const achievement = read('apps-script', 'Pencapaianbackend.gs');
+const membership = read('apps-script', 'KeahlianBackend.gs');
+const students = read('apps-script', 'Murid.gs');
+const clubs = read('apps-script', 'KelabBackend.gs');
+const archive = read('apps-script', 'ArkibBackend.gs');
+const auth = read('apps-script', 'Auth.gs');
+const setup = read('apps-script', 'SetupBackend.gs');
 const pages = [
   ['GitHub Pages', read('docs', 'penilaian.html')],
   ['Apps Script', read('apps-script', 'Penilaian.html')]
@@ -19,7 +27,15 @@ for (const [name, source] of [
   ['Code.gs', code],
   ['Kehadiranbackend.gs', attendance],
   ['PenilaianBackend.gs', assessment],
-  ['PAJSKBackend.gs', pajsk]
+  ['PAJSKBackend.gs', pajsk],
+  ['Laporanbackend.gs', report],
+  ['Pencapaianbackend.gs', achievement],
+  ['KeahlianBackend.gs', membership],
+  ['Murid.gs', students],
+  ['KelabBackend.gs', clubs],
+  ['ArkibBackend.gs', archive],
+  ['Auth.gs', auth],
+  ['SetupBackend.gs', setup]
 ]) {
   assert.doesNotThrow(() => new Function(source), `${name}: sintaks mesti sah`);
 }
@@ -32,6 +48,12 @@ assert.match(code, /function denganKunciDokumen_/,
   'Operasi tulis mesti menggunakan satu pembantu LockService');
 assert.match(code, /function nomborSah_/,
   'Nilai PAJSK mesti melalui pengawal nombor');
+for (const operation of ['kemaskiniTetapan', 'simpanLogo']) {
+  const block = code.match(new RegExp(
+    `function ${operation}\\([\\s\\S]*?(?=\\nfunction |$)`))[0];
+  assert.match(block, /denganKunciDokumen_/,
+    `${operation}: perubahan tetapan mesti dikunci`);
+}
 
 const helperSource = [
   code.match(/function normalisasiIC\(nilai\) \{[\s\S]*?\n\}/)[0],
@@ -89,6 +111,77 @@ assert.match(pajsk, /cacheSimpan\(kunciCache, hasil, 120\)/,
   'Anggaran kelas perlu cache pelayan jangka pendek');
 assert.match(pajsk, /batalCacheAnggaran_\(\)/,
   'Penulisan markah mesti membatalkan cache anggaran');
+const kiraPajskTulis = pajsk.match(new RegExp(
+  'function kiraPAJSK\\([\\s\\S]*?(?=\\nfunction |$)'))[0];
+assert.match(kiraPajskTulis, /denganKunciDokumen_/,
+  'kiraPAJSK menulis ringkasan dan mesti dikunci');
+
+for (const [name, source, operations] of [
+  ['Laporan', report, ['simpanLaporan', 'padamLaporan']],
+  ['Pencapaian', achievement, ['tambahPencapaian', 'padamPencapaian']],
+  ['Keahlian', membership, [
+    'tambahAhliKelab', 'tukarJawatanAhli', 'buangAhliKelab',
+    'padamKeahlianKekal', 'tukarKelabAhli'
+  ]],
+  ['Import', students, ['importMurid', 'importKeahlian']],
+  ['Kelab/Guru', clubs, [
+    'tambahKelab', 'editKelab', 'togolStatusKelab', 'tambahGuru',
+    'padamGuru', 'padamKelab', 'tukarJenisKelab', 'importGuru'
+  ]],
+  ['Arkib', archive, [
+    'tutupTahunAkademik', 'buatBackupManual',
+    'togolBackupAutomatik', 'backupAutoTrigger'
+  ]],
+  ['Persediaan', setup, ['jalankanSetup', 'resetUntukSekolahBaru']]
+]) {
+  for (const operation of operations) {
+    const block = source.match(new RegExp(
+      `function ${operation}\\([\\s\\S]*?(?=\\nfunction |$)`))[0];
+    assert.match(block, /denganKunciDokumen_/,
+      `${name}/${operation}: penulisan mesti dikunci`);
+  }
+}
+
+assert.match(report, /nomborLaporan[\s\S]*Math\.max\(maks/,
+  'ID laporan mesti berdasarkan nombor maksimum');
+assert.match(report, /nomborGambarSeterus[\s\S]*Math\.max\(maks/,
+  'ID gambar tidak boleh diguna semula selepas pemadaman');
+assert.doesNotMatch(report, /sheetG\.appendRow/,
+  'Metadata gambar mesti ditulis secara pukal');
+assert.match(achievement, /normalisasiIC\(senaraiIC\[i\]\)/,
+  'Pencapaian mesti menyimpan IC ternormalisasi');
+assert.match(achievement, /var noMula =[\s\S]*Math\.max\(maks/,
+  'ID pencapaian mesti berdasarkan nombor maksimum');
+
+const importMurid = students.match(new RegExp(
+  'function importMurid\\([\\s\\S]*?(?=\\nfunction |$)'))[0];
+assert.match(importMurid, /Import dihentikan sebelum data diubah/,
+  'Import murid rosak mesti gagal sebelum menukar data');
+assert.match(importMurid, /normalisasiIC\(icAsal\)/,
+  'Import murid mesti menormalkan IC di sempadan masuk');
+const importKeahlian = students.match(new RegExp(
+  'function importKeahlian\\([\\s\\S]*?(?=\\nfunction |$)'))[0];
+assert.ok(importKeahlian.indexOf('sheetKeahlian.clearContents()') >
+  importKeahlian.indexOf('for (var i = 1; i < baris.length; i++)'),
+  'Import keahlian mesti selesai mengesah sebelum mengosongkan sheet');
+assert.match(importKeahlian, /keahlianDilihat/,
+  'Keahlian pendua dalam fail import mesti dikesan');
+
+for (const operation of [
+  'pastikanAkaunGuru', 'tukarKataLaluanAdmin',
+  'tukarKataLaluanGuru', 'tukarKataLaluanSendiri'
+]) {
+  const block = auth.match(new RegExp(
+    `function ${operation}\\([\\s\\S]*?(?=\\nfunction |$)`))[0];
+  assert.match(block, /denganKunciDokumen_/,
+    `${operation}: perubahan akaun mesti dikunci`);
+}
+assert.doesNotMatch(auth.match(new RegExp(
+  'function pastikanAkaunGuru\\([\\s\\S]*?(?=\\nfunction |$)'))[0],
+  /appendRow/,
+  'Segerak akaun guru tidak boleh menulis dalam gelung');
+assert.match(auth, /LockService\.getScriptLock\(\)/,
+  'Log aktiviti serentak mesti mempunyai kunci khusus');
 
 for (const [name, html] of pages) {
   assert.match(html, /cacheAnggaranKelas/,

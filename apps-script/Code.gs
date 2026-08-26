@@ -328,7 +328,7 @@ function kemaskiniTetapan(data, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  try {
+  return denganKunciDokumen_('Kemas kini tetapan', function() {
     var tetapanSedia = getTetapan();
     // Kekalkan SEMUA kunci sedia ada (cth: LOGO),
     // hanya tulis ganti medan yang diubah
@@ -363,9 +363,7 @@ function kemaskiniTetapan(data, token) {
     logAktiviti(sesi.id, 'KEMASKINI_TETAPAN',
       'Tetapan sistem dikemaskini');
     return { berjaya: true };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function tukarPassword(id, passwordBaru) {
@@ -388,7 +386,7 @@ function tukarPassword(id, passwordBaru) {
 //   <?!= renderSidebar(token, peranan) ?>
 // ============================================
 
-var VERSI_SISTEM = 'AKSI v1.1';
+var VERSI_SISTEM = 'AKSI v1.3.1';
 
 function renderSidebar(token, peranan) {
   var url = ScriptApp.getService().getUrl();
@@ -605,7 +603,7 @@ function simpanLogo(dataUrl, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  try {
+  return denganKunciDokumen_('Simpan logo', function() {
     if (dataUrl && dataUrl.length > 45000) {
       return { berjaya: false,
                mesej: 'Logo terlalu besar.' };
@@ -616,9 +614,7 @@ function simpanLogo(dataUrl, token) {
     logAktiviti(sesi.id, 'TUKAR_LOGO',
       'Logo sekolah dikemaskini');
     return { berjaya: true };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 

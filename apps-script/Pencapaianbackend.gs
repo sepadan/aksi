@@ -5,7 +5,7 @@ function tambahPencapaian(data, token) {
   if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Simpan pencapaian', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('PENCAPAIAN');
     var tetapan = getTetapan();
@@ -22,13 +22,18 @@ function tambahPencapaian(data, token) {
     var icSah = {};
     sheetMurid.getDataRange().getValues().slice(1)
       .forEach(function(r) {
-        if (r[0]) icSah[String(r[0]).trim()] = true;
+        var icKunci = normalisasiIC(r[0]);
+        if (icKunci) icSah[icKunci] = true;
       });
 
     var baris = [];
-    var noMula = sheet.getLastRow();
+    var noMula = sheet.getDataRange().getValues().slice(1)
+      .reduce(function(maks, r) {
+        var padan = String(r[0] || '').match(/^CA(\d+)$/);
+        return padan ? Math.max(maks, Number(padan[1])) : maks;
+      }, 0) + 1;
     for (var i = 0; i < senaraiIC.length; i++) {
-      var ic = String(senaraiIC[i]).trim();
+      var ic = normalisasiIC(senaraiIC[i]);
       if (!icSah[ic]) {
         return {
           berjaya: false,
@@ -47,14 +52,13 @@ function tambahPencapaian(data, token) {
 
     sheet.getRange(sheet.getLastRow() + 1, 1,
       baris.length, 11).setValues(baris);
+    batalCacheAnggaran_();
 
     logAktiviti(sesi.id, 'TAMBAH_PENCAPAIAN',
       senaraiIC.length + ' murid: ' +
       data.namaPertandingan);
     return { berjaya: true, bilangan: baris.length };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function getSenaraiPencapaian(filter, token) {
@@ -111,7 +115,7 @@ function padamPencapaian(id, token) {
     return { berjaya: false,
              mesej: 'Hanya admin boleh memadam.' };
 
-  try {
+  return denganKunciDokumen_('Padam pencapaian', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('PENCAPAIAN');
     var data = sheet.getDataRange().getValues();
@@ -119,6 +123,7 @@ function padamPencapaian(id, token) {
     for (var i = 1; i < data.length; i++) {
       if (data[i][0] === id) {
         sheet.deleteRow(i + 1);
+        batalCacheAnggaran_();
         logAktiviti(sesi.id, 'PADAM_PENCAPAIAN',
           'ID:' + id);
         return { berjaya: true };
@@ -128,9 +133,7 @@ function padamPencapaian(id, token) {
       berjaya: false,
       mesej: 'Rekod tidak dijumpai.'
     };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function getMarkahPencapaian(ic, idKelab, tahun) {

@@ -22,21 +22,24 @@ backend terus dari sini, tanpa tuan perlu menampal 27 fail satu per satu.
 | Fail | Tarikh | Keadaan |
 |---|---|---|
 | `Kebenaran.gs` | 23 Ogos 2026 | Sepadan dengan yang dipasang |
-| `Auth.gs` | 23 Ogos 2026 | Sepadan dengan yang dipasang |
-| **`Code.gs`** | **26 Ogos 2026** | Pembantu kestabilan/IC sepadan; struktur fail masih lapuk — lihat di bawah |
-| `Kehadiranbackend.gs` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 7 |
-| `PenilaianBackend.gs` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 7 |
-| `PAJSKBackend.gs` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 7 |
-| `Penilaian.html` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 7 |
-| Selebihnya (21 fail) | 20 Ogos 2026 | Belum berubah sejak itu |
+| `Auth.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
+| **`Code.gs`** | **27 Ogos 2026** | Fungsi tetapan/logo, pembantu kestabilan/IC dan versi sepadan; struktur fail masih lapuk — lihat di bawah |
+| `Kehadiranbackend.gs` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
+| `PenilaianBackend.gs` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
+| `Penilaian.html` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
+| `PAJSKBackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
+| `ArkibBackend.gs`, `KeahlianBackend.gs`, `KelabBackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
+| `Laporanbackend.gs`, `Pencapaianbackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
+| `Murid.gs`, `SetupBackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
+| Fail lain | 20–23 Ogos 2026 | Tidak berubah dalam Version 8; status terdahulu dikekalkan |
 
 ### ⚠️ `Code.gs` lapuk
 
 Dalam projek sebenar, `doPost(e)` dan array `var API_DIBENARKAN = [...]`
 sudah **dibuang** daripada `Code.gs` pada 23 Ogos, dan digantikan oleh
 `Kebenaran.gs`. Salinan di sini masih mengandungi kedua-duanya. Bahagian
-pembantu cache, `LockService`, nombor selamat dan normalisasi IC telah
-dicerminkan pada 26 Ogos, tetapi itu tidak menjadikan keseluruhan `Code.gs`
+fungsi tetapan/logo, pembantu cache, `LockService`, nombor selamat,
+normalisasi IC dan nombor versi telah dicerminkan pada 27 Ogos, tetapi itu tidak menjadikan keseluruhan `Code.gs`
 selamat dipulihkan.
 
 **Jangan pulihkan `Code.gs` daripada folder ini** tanpa membuang semula dua

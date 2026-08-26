@@ -1,7 +1,7 @@
 // SetupBackend.gs
 
 function jalankanSetup(data) {
-  try {
+  return denganKunciDokumen_('Jalankan persediaan sistem', function() {
     buatSemuaSheet();
     const folderId = buatFolderDrive(data.namaSekolah);
     var tetapanBaru = {
@@ -20,9 +20,7 @@ function jalankanSetup(data) {
     simpanTetapan(tetapanBaru);
     simpanPengguna(data.passwordAdmin, data.passwordGuru);
     return { berjaya: true };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function buatSemuaSheet() {
@@ -193,6 +191,7 @@ function semakSetup() {
 // (salinan baru akan cipta folder Drive sendiri).
 // ============================================
 function resetUntukSekolahBaru() {
+  return denganKunciDokumen_('Reset untuk sekolah baru', function() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
   // 1. Kosongkan data, kekalkan baris header
@@ -243,4 +242,6 @@ function resetUntukSekolahBaru() {
 
   Logger.log('Reset selesai. Buka URL /exec — ' +
     'wizard Setup akan muncul untuk sekolah baru.');
+  return { berjaya: true };
+  });
 }

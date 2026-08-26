@@ -21,7 +21,7 @@ function tambahKelab(data, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  try {
+  return denganKunciDokumen_('Tambah kelab', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('KELAB');
     var rekod = sheet.getDataRange().getValues()
@@ -50,12 +50,11 @@ function tambahKelab(data, token) {
     ]);
 
     cacheBuang('KELAB_AKTIF_V1');
+    batalCacheAnggaran_();
     logAktiviti(sesi.id, 'TAMBAH_KELAB',
       'Kelab: ' + namaBaru);
     return { berjaya: true, id: idBaru };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function editKelab(id, data, token) {
@@ -63,7 +62,7 @@ function editKelab(id, data, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  try {
+  return denganKunciDokumen_('Edit kelab', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('KELAB');
     var rekod = sheet.getDataRange().getValues();
@@ -79,6 +78,7 @@ function editKelab(id, data, token) {
           data.status || 'AKTIF'
         ]]);
         cacheBuang('KELAB_AKTIF_V1');
+        batalCacheAnggaran_();
         logAktiviti(sesi.id, 'EDIT_KELAB',
           'ID: ' + id);
         return { berjaya: true };
@@ -88,9 +88,7 @@ function editKelab(id, data, token) {
       berjaya: false,
       mesej: 'Kelab tidak dijumpai.'
     };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function togolStatusKelab(id, token) {
@@ -98,7 +96,7 @@ function togolStatusKelab(id, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  try {
+  return denganKunciDokumen_('Tukar status kelab', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('KELAB');
     var rekod = sheet.getDataRange().getValues();
@@ -109,6 +107,7 @@ function togolStatusKelab(id, token) {
           'TIDAK AKTIF' : 'AKTIF';
         sheet.getRange(i + 1, 7).setValue(statusBaru);
         cacheBuang('KELAB_AKTIF_V1');
+        batalCacheAnggaran_();
         logAktiviti(sesi.id, 'TOGOL_KELAB',
           'ID: ' + id + ' → ' + statusBaru);
         return { berjaya: true, status: statusBaru };
@@ -118,9 +117,7 @@ function togolStatusKelab(id, token) {
       berjaya: false,
       mesej: 'Kelab tidak dijumpai.'
     };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function tambahGuru(nama, jawatan, token) {
@@ -128,7 +125,7 @@ function tambahGuru(nama, jawatan, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  try {
+  return denganKunciDokumen_('Tambah guru', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('GURU');
     var idBaru = 'G' + new Date().getTime();
@@ -137,9 +134,7 @@ function tambahGuru(nama, jawatan, token) {
     logAktiviti(sesi.id, 'TAMBAH_GURU',
       'Guru: ' + nama);
     return { berjaya: true, id: idBaru };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function padamGuru(id, token) {
@@ -147,7 +142,7 @@ function padamGuru(id, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  try {
+  return denganKunciDokumen_('Padam guru', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('GURU');
     var rekod = sheet.getDataRange().getValues();
@@ -164,9 +159,7 @@ function padamGuru(id, token) {
       berjaya: false,
       mesej: 'Guru tidak dijumpai.'
     };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 /**
@@ -180,7 +173,7 @@ function padamKelab(id, token) {
     return { berjaya: false,
              mesej: 'Hanya admin boleh memadam.' };
 
-  try {
+  return denganKunciDokumen_('Padam kelab', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
     // Semak data berkaitan
@@ -209,14 +202,13 @@ function padamKelab(id, token) {
         sheet.deleteRow(i + 1);
         logAktiviti(sesi.id, 'PADAM_KELAB', 'ID:' + id);
         cacheBuang('KELAB_AKTIF_V1');
+        batalCacheAnggaran_();
         return { berjaya: true };
       }
     }
     return { berjaya: false,
              mesej: 'Rekod tidak dijumpai.' };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 
@@ -230,7 +222,7 @@ function tukarJenisKelab(id, jenis, token) {
   var sesi = semakSesi(token);
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
-  try {
+  return denganKunciDokumen_('Tukar jenis kelab', function() {
     var sheet = SpreadsheetApp.getActiveSpreadsheet()
       .getSheetByName('KELAB');
     var rekod = sheet.getDataRange().getValues();
@@ -238,6 +230,7 @@ function tukarJenisKelab(id, jenis, token) {
       if (rekod[i][0] === id) {
         sheet.getRange(i + 1, 4)
           .setValue(jenis === 'Umum' ? '' : jenis);
+        batalCacheAnggaran_();
         logAktiviti(sesi.id, 'TUKAR_JENIS_KOKU',
           'ID: ' + id + ' → ' + jenis);
         return { berjaya: true };
@@ -245,9 +238,7 @@ function tukarJenisKelab(id, jenis, token) {
     }
     return { berjaya: false,
              mesej: 'Koku tidak dijumpai.' };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 
@@ -259,7 +250,7 @@ function importGuru(senaraiNama, token) {
   var sesi = semakSesi(token);
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
-  try {
+  return denganKunciDokumen_('Import guru', function() {
     var sheet = SpreadsheetApp.getActiveSpreadsheet()
       .getSheetByName('GURU');
     var sedia = {};
@@ -289,7 +280,5 @@ function importGuru(senaraiNama, token) {
       ' Langkau:' + langkau);
     return { berjaya: true, tambah: baris.length,
              langkau: langkau };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }

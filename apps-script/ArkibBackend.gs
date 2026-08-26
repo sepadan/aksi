@@ -102,7 +102,7 @@ function tutupTahunAkademik(tahunBaru, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  try {
+  return denganKunciDokumen_('Tutup tahun akademik', function() {
     var tetapan = getTetapan();
     var tahunLama = tetapan.TAHUN_AKADEMIK.toString();
     tahunBaru = (tahunBaru || '').toString().trim();
@@ -163,9 +163,7 @@ function tutupTahunAkademik(tahunBaru, token) {
       bilArkib: bilArkib,
       namaBackup: namaBackup
     };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 /**
@@ -255,13 +253,11 @@ function buatBackupManual(token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  try {
+  return denganKunciDokumen_('Backup manual', function() {
     var nama = buatSalinanBackup('Manual', null);
     logAktiviti(sesi.id, 'BACKUP_MANUAL', nama);
     return { berjaya: true, nama: nama };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 /**
@@ -273,7 +269,7 @@ function togolBackupAutomatik(aktif, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  try {
+  return denganKunciDokumen_('Tetapan backup automatik', function() {
     // Padam trigger sedia ada
     ScriptApp.getProjectTriggers().forEach(function(t) {
       if (t.getHandlerFunction() ===
@@ -293,9 +289,7 @@ function togolBackupAutomatik(aktif, token) {
     logAktiviti(sesi.id, 'BACKUP_AUTO',
       aktif ? 'DIHIDUPKAN (mingguan)' : 'DIMATIKAN');
     return { berjaya: true, aktif: !!aktif };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 /**
@@ -304,7 +298,7 @@ function togolBackupAutomatik(aktif, token) {
  * terkini (backup manual / tutup tahun tidak dipadam).
  */
 function backupAutoTrigger() {
-  try {
+  var hasil = denganKunciDokumen_('Backup automatik', function() {
     var tetapan = getTetapan();
     buatSalinanBackup('Auto', tetapan);
 
@@ -327,8 +321,11 @@ function backupAutoTrigger() {
 
     logAktiviti('sistem', 'BACKUP_AUTO',
       'Backup mingguan berjaya');
-  } catch(e) {
-    logAktiviti('sistem', 'BACKUP_AUTO_RALAT',
-      e.toString());
+    return { berjaya: true };
+  });
+  if (!hasil || !hasil.berjaya) {
+    console.error(hasil ? hasil.mesej :
+      'Backup automatik gagal tanpa mesej.');
   }
+  return hasil;
 }

@@ -33,9 +33,9 @@ for (const [name, html] of [['GitHub Pages', github], ['Apps Script', legacy]]) 
 
 assert.match(github, /if \(AKSI\.bolehTulis\(\)\) muatSenaraiMuridPencapaian\(\)/,
   'GitHub Pages: hanya pengguna yang boleh menulis boleh memuat senarai penuh murid');
-assert.match(sw, /aksi-shell-v1\.3\.0-20260826-8/,
+assert.match(sw, /aksi-shell-v1\.3\.1-20260826-9/,
   'Cache PWA mesti dinaikkan bersama aset');
-assert.match(config, /AKSI v1\.3\.0 · PWA/,
+assert.match(config, /AKSI v1\.3\.1 · PWA/,
   'Versi paparan mesti sepadan dengan cache PWA');
 
 const docs = path.join(root, 'docs');

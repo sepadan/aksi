@@ -116,6 +116,11 @@ function senaraiGuruLogin() {
  * Akaun sedia ada TIDAK disentuh — kata laluan yang sudah ditukar kekal.
  */
 function pastikanAkaunGuru(token) {
+  var sesi = semakSesi(token);
+  if (!sesi || sesi.peranan !== 'admin')
+    return { berjaya: false, mesej: 'Tindakan ini untuk admin sahaja.' };
+
+  return denganKunciDokumen_('Segerak akaun guru', function() {
   var sheet = tabPengguna_();
   if (!sheet) return { berjaya: false, mesej: 'Tab PENGGUNA tiada.' };
 
@@ -127,15 +132,21 @@ function pastikanAkaunGuru(token) {
 
   var hashLalai = hashPassword(KATA_LALUAN_LALAI_GURU);
   var baharu = [];
+  var barisBaharu = [];
   namaGuruSemua_().forEach(function (nama) {
     if (ada[nama.toUpperCase()]) return;
-    sheet.appendRow([nama, 'guru', hashLalai]);
+    barisBaharu.push([nama, 'guru', hashLalai]);
     baharu.push(nama);
   });
+  if (barisBaharu.length > 0) {
+    sheet.getRange(sheet.getLastRow() + 1, 1,
+      barisBaharu.length, 3).setValues(barisBaharu);
+  }
 
   logAktiviti(sesiId_(token), 'AKAUN_GURU',
       baharu.length + ' akaun guru baharu dibuat');
   return { berjaya: true, baharu: baharu.length, nama: baharu };
+  });
 }
 
 // ---- log masuk --------------------------------------------
@@ -298,22 +309,30 @@ function tukarKataLaluanAdmin(token, baharu) {
   var ralat = sahKataLaluan_(baharu);
   if (ralat) return { berjaya: false, mesej: ralat };
 
-  var sheet = tabPengguna_();
-  if (!sheet) return { berjaya: false, mesej: 'Tab PENGGUNA tiada.' };
+  return denganKunciDokumen_('Tukar kata laluan admin', function() {
+    var sheet = tabPengguna_();
+    if (!sheet) return { berjaya: false, mesej: 'Tab PENGGUNA tiada.' };
 
-  var data = sheet.getDataRange().getValues();
-  var bil = 0;
-  for (var i = 1; i < data.length; i++) {
-    if (String(data[i][1] || '').trim().toLowerCase() === 'admin') {
-      sheet.getRange(i + 1, 3).setValue(hashPassword(baharu));
-      bil++;
+    var data = sheet.getDataRange().getValues();
+    var bil = 0;
+    var hashBaharu = hashPassword(baharu);
+    var lajurHash = data.slice(1).map(function(r) {
+      if (String(r[1] || '').trim().toLowerCase() === 'admin') {
+        bil++;
+        return [hashBaharu];
+      }
+      return [r[2]];
+    });
+    if (!bil) return { berjaya: false, mesej: 'Tiada akaun admin dijumpai.' };
+    if (lajurHash.length > 0) {
+      sheet.getRange(2, 3, lajurHash.length, 1)
+        .setValues(lajurHash);
     }
-  }
-  if (!bil) return { berjaya: false, mesej: 'Tiada akaun admin dijumpai.' };
 
-  logAktiviti(sesi.id, 'TUKAR_KATA_LALUAN', 'Kata laluan admin ditukar');
-  return { berjaya: true,
-           mesej: 'Kata laluan admin ditukar. Log masuk semula diperlukan.' };
+    logAktiviti(sesi.id, 'TUKAR_KATA_LALUAN', 'Kata laluan admin ditukar');
+    return { berjaya: true,
+             mesej: 'Kata laluan admin ditukar. Log masuk semula diperlukan.' };
+  });
 }
 
 /** Tukar kata laluan seorang guru. Admin sahaja. */
@@ -328,14 +347,18 @@ function tukarKataLaluanGuru(token, namaGuru, baharu) {
   var ralat = sahKataLaluan_(baharu);
   if (ralat) return { berjaya: false, mesej: ralat };
 
-  if (!tulisKataLaluan_(namaGuru, baharu)) {
-    return { berjaya: false,
-             mesej: 'Guru "' + namaGuru + '" tiada akaun. ' +
-                    'Tekan "Segerak Akaun Guru" dahulu.' };
-  }
-  kosongkanCubaan_(namaGuru);
-  logAktiviti(sesi.id, 'TUKAR_KATA_LALUAN', 'Kata laluan ' + namaGuru + ' ditukar');
-  return { berjaya: true, mesej: 'Kata laluan ' + namaGuru + ' ditukar.' };
+  return denganKunciDokumen_('Tukar kata laluan guru', function() {
+    if (!tulisKataLaluan_(namaGuru, baharu)) {
+      return { berjaya: false,
+               mesej: 'Guru "' + namaGuru + '" tiada akaun. ' +
+                      'Tekan "Segerak Akaun Guru" dahulu.' };
+    }
+    kosongkanCubaan_(namaGuru);
+    logAktiviti(sesi.id, 'TUKAR_KATA_LALUAN',
+      'Kata laluan ' + namaGuru + ' ditukar');
+    return { berjaya: true,
+      mesej: 'Kata laluan ' + namaGuru + ' ditukar.' };
+  });
 }
 
 /** Guru menukar kata laluan sendiri. Tidak boleh menukar orang lain. */
@@ -344,29 +367,38 @@ function tukarKataLaluanSendiri(token, lama, baharu) {
   if (!sesi || sesi.peranan === 'tetamu') {
     return { berjaya: false, mesej: 'Sila log masuk dahulu.' };
   }
-  var sheet = tabPengguna_();
-  if (!sheet) return { berjaya: false, mesej: 'Tab PENGGUNA tiada.' };
-
-  var baris = cariBarisPengguna_(sheet, sesi.id);
-  if (baris === -1) return { berjaya: false, mesej: 'Akaun tidak dijumpai.' };
-
-  if (sheet.getRange(baris, 3).getValue() !== hashPassword(lama)) {
-    return { berjaya: false, mesej: 'Kata laluan lama tidak betul.' };
-  }
   var ralat = sahKataLaluan_(baharu);
   if (ralat) return { berjaya: false, mesej: ralat };
 
-  sheet.getRange(baris, 3).setValue(hashPassword(baharu));
-  logAktiviti(sesi.id, 'TUKAR_KATA_LALUAN', 'Kata laluan sendiri ditukar');
-  return { berjaya: true, mesej: 'Kata laluan ditukar.' };
+  return denganKunciDokumen_('Tukar kata laluan sendiri', function() {
+    var sheet = tabPengguna_();
+    if (!sheet) return { berjaya: false, mesej: 'Tab PENGGUNA tiada.' };
+
+    var baris = cariBarisPengguna_(sheet, sesi.id);
+    if (baris === -1)
+      return { berjaya: false, mesej: 'Akaun tidak dijumpai.' };
+    if (sheet.getRange(baris, 3).getValue() !== hashPassword(lama)) {
+      return { berjaya: false, mesej: 'Kata laluan lama tidak betul.' };
+    }
+
+    sheet.getRange(baris, 3).setValue(hashPassword(baharu));
+    logAktiviti(sesi.id, 'TUKAR_KATA_LALUAN',
+      'Kata laluan sendiri ditukar');
+    return { berjaya: true, mesej: 'Kata laluan ditukar.' };
+  });
 }
 
 function logAktiviti(pengguna, tindakan, butiran) {
+  var kunciLog = LockService.getScriptLock();
   try {
+    if (!kunciLog.tryLock(5000)) return;
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('LOG_AKTIVITI');
     if (!sheet) return;
     var masa = new Date().toLocaleString('ms-MY');
     sheet.appendRow([masa, pengguna, tindakan, butiran]);
-  } catch(e) {}
+  } catch(e) {
+  } finally {
+    if (kunciLog.hasLock()) kunciLog.releaseLock();
+  }
 }

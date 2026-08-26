@@ -4,7 +4,7 @@ function importMurid(csvText, token) {
   if (!semakSesi(token))
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Import data murid', function() {
     // Buang BOM & pecah baris (sokong CRLF Windows)
     var baris = csvText.replace(/^\uFEFF/, '')
       .trim().split(/\r?\n/);
@@ -90,25 +90,55 @@ function importMurid(csvText, token) {
     });
 
     var petaBaris = {};
+    var penduaSedia = 0;
+    var icSediaTidakSah = 0;
     barisData.forEach(function(r, i) {
-      petaBaris[r[0].toString().trim()] = i;
+      var icKunci = normalisasiIC(r[0]);
+      if (!icKunci) {
+        icSediaTidakSah++;
+        return;
+      }
+      if (petaBaris[icKunci] !== undefined) penduaSedia++;
+      petaBaris[icKunci] = i;
+      r[0] = icKunci;
     });
+    if (penduaSedia > 0 || icSediaTidakSah > 0) {
+      return {
+        berjaya: false,
+        mesej: 'Import dihentikan: MURID_MASTER mempunyai ' +
+          'IC pendua: ' + penduaSedia +
+          ', IC tidak sah: ' + icSediaTidakSah +
+          '. Betulkan sumber dahulu.'
+      };
+    }
 
     var icDalamCSV = {};
+    var icDilihat = {};
     var jumlahTambah = 0;
     var jumlahKemaskini = 0;
     var jumlahLangkau = 0;
+    var jumlahTidakSah = 0;
+    var jumlahPendua = 0;
     var tarikhKini = new Date().toLocaleDateString('ms-MY');
 
     for (var i = idxHeader + 1; i < baris.length; i++) {
       var lajur = pecahCSV(baris[i]);
       if (!lajur || lajur.length < 2) continue;
 
-      var ic = (lajur[idx.ic] || '').trim()
+      var icAsal = (lajur[idx.ic] || '').trim()
         .replace(/"/g, '');
+      var ic = normalisasiIC(icAsal);
       var nama = (lajur[idx.nama] || '').trim()
         .replace(/"/g, '');
-      if (!ic || !nama) continue;
+      if (!ic || !nama) {
+        if (icAsal || nama) jumlahTidakSah++;
+        continue;
+      }
+      if (icDilihat[ic]) {
+        jumlahPendua++;
+        continue;
+      }
+      icDilihat[ic] = true;
 
       // Langkau prasekolah & pendidikan khas
       // (bukan skop sistem koku)
@@ -156,6 +186,16 @@ function importMurid(csvText, token) {
       }
     }
 
+    if (jumlahTidakSah > 0 || jumlahPendua > 0 ||
+        Object.keys(icDalamCSV).length === 0) {
+      return {
+        berjaya: false,
+        mesej: 'Import dihentikan sebelum data diubah. ' +
+          'IC/nama tidak sah: ' + jumlahTidakSah +
+          ', IC pendua: ' + jumlahPendua + '.'
+      };
+    }
+
     // Murid yang tiada dalam CSV ditandakan TIDAK AKTIF
     var jumlahTidakAktif = 0;
     barisData.forEach(function(r) {
@@ -191,6 +231,7 @@ function importMurid(csvText, token) {
       ' LangkauPra:' + jumlahLangkau);
 
     cacheBuang('KELAS_AKTIF_V1');
+    batalCacheAnggaran_();
     return {
       berjaya: true,
       tambah: jumlahTambah,
@@ -198,9 +239,7 @@ function importMurid(csvText, token) {
       tidakAktif: jumlahTidakAktif,
       langkau: jumlahLangkau
     };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function exportTemplateKoku(token) {
@@ -243,7 +282,7 @@ function importKeahlian(csvText, token) {
   if (!semakSesi(token))
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Import keahlian', function() {
     var baris = csvText.trim().split('\n');
     var header = baris[0].split(',').map(function(h) {
       return h.trim().replace(/"/g, '');
@@ -284,12 +323,14 @@ function importKeahlian(csvText, token) {
       return r[8] === 'AKTIF';
     }).forEach(function(r) {
       if (!r[0]) return;
-      icMurid[r[0].toString().trim()] = true;
+      var icKunci = normalisasiIC(r[0]);
+      if (!icKunci) return;
+      icMurid[icKunci] = true;
       var kunci = (r[1] || '').toString()
         .trim().toUpperCase();
       if (!namaMap[kunci]) namaMap[kunci] = [];
       namaMap[kunci].push({
-        ic: r[0].toString().trim(),
+        ic: icKunci,
         kelas: (r[4] || '').toString()
           .trim().toUpperCase()
       });
@@ -306,19 +347,8 @@ function importKeahlian(csvText, token) {
     var dataKeahlianSedia = sheetKeahlian.getDataRange()
       .getValues().slice(1);
     var barisKekal = dataKeahlianSedia.filter(function(r) {
-      return r[4] !== tahunAkademik;
+      return !samaNilai(r[4], tahunAkademik);
     });
-
-    sheetKeahlian.clearContents();
-    sheetKeahlian.getRange(1, 1, 1, 6).setValues([[
-      'IC', 'ID_KELAB', 'KATEGORI', 'JAWATAN',
-      'TAHUN_AKADEMIK', 'STATUS'
-    ]]);
-
-    if (barisKekal.length > 0) {
-      sheetKeahlian.getRange(2, 1,
-        barisKekal.length, 6).setValues(barisKekal);
-    }
 
     var jumlahBerjaya = 0;
     var jumlahRalat = 0;
@@ -327,13 +357,15 @@ function importKeahlian(csvText, token) {
     var kokuBaruBil = 0;
     var senaraiRalat = [];
     var barisBaru = [];
+    var keahlianDilihat = {};
 
     for (var i = 1; i < baris.length; i++) {
       var lajur = pecahCSV(baris[i]);
       if (!lajur || lajur.length < 2) continue;
 
-      var ic = (lajur[idx.ic] || '').trim()
+      var icAsal = (lajur[idx.ic] || '').trim()
         .replace(/"/g, '').replace(/^=/, '');
+      var ic = normalisasiIC(icAsal);
       var namaRow = idx.nama !== -1 ?
         (lajur[idx.nama] || '').trim()
           .replace(/"/g, '') : '';
@@ -390,6 +422,14 @@ function importKeahlian(csvText, token) {
             ' (' + kat.label + ')');
         }
 
+        var kunciKeahlian = ic + '|' + kat.label;
+        if (keahlianDilihat[kunciKeahlian]) {
+          senaraiRalat.push('Baris ' + (i + 1) +
+            ': keahlian kategori ' + kat.label + ' pendua');
+          jumlahRalat++;
+          return;
+        }
+        keahlianDilihat[kunciKeahlian] = true;
         barisBaru.push([
           ic, idKelab, kat.label,
           'Ahli Biasa', tahunAkademik, 'AKTIF'
@@ -398,6 +438,28 @@ function importKeahlian(csvText, token) {
       });
     }
 
+    if (jumlahRalat > 0 || barisBaru.length === 0) {
+      return {
+        berjaya: false,
+        mesej: 'Import keahlian dihentikan sebelum data diubah. ' +
+          'Ralat: ' + jumlahRalat +
+          ', keahlian sah: ' + barisBaru.length + '.',
+        jumlahRalat: jumlahRalat,
+        senaraiBaris: senaraiRalat.slice(0, 10)
+      };
+    }
+
+    // Semua parsing dan pengesahan selesai sebelum jadual semasa
+    // disentuh. Ralat tidak boleh meninggalkan sheet separuh kosong.
+    sheetKeahlian.clearContents();
+    sheetKeahlian.getRange(1, 1, 1, 6).setValues([[
+      'IC', 'ID_KELAB', 'KATEGORI', 'JAWATAN',
+      'TAHUN_AKADEMIK', 'STATUS'
+    ]]);
+    if (barisKekal.length > 0) {
+      sheetKeahlian.getRange(2, 1,
+        barisKekal.length, 6).setValues(barisKekal);
+    }
     if (barisBaru.length > 0) {
       var barisAkhir = sheetKeahlian.getLastRow() + 1;
       sheetKeahlian.getRange(barisAkhir, 1,
@@ -416,6 +478,7 @@ function importKeahlian(csvText, token) {
         .setValues(kokuBaruBaris);
       cacheBuang('KELAB_AKTIF_V1');
     }
+    batalCacheAnggaran_();
 
     return {
       berjaya: true,
@@ -424,9 +487,7 @@ function importKeahlian(csvText, token) {
       kokuBaru: kokuBaruNama,
       senaraiBaris: senaraiRalat.slice(0, 10)
     };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function getSenaraiMurid(filter, token) {

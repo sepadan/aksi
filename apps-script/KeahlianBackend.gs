@@ -158,7 +158,7 @@ function tambahAhliKelab(ic, idKelab, token) {
   if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Tambah ahli kelab', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var tetapan = getTetapan();
 
@@ -210,6 +210,7 @@ function tambahAhliKelab(ic, idKelab, token) {
           rekod[i][5] !== 'AKTIF') {
         sheetKeahlian.getRange(i + 1, 6)
           .setValue('AKTIF');
+        batalCacheAnggaran_();
         logAktiviti(sesi.id, 'AKTIF_SEMULA_AHLI',
           'IC:' + ic + ' Kelab:' + idKelab);
         return { berjaya: true };
@@ -220,12 +221,11 @@ function tambahAhliKelab(ic, idKelab, token) {
       ic, idKelab, kategori, 'Ahli Biasa',
       tetapan.TAHUN_AKADEMIK, 'AKTIF'
     ]);
+    batalCacheAnggaran_();
     logAktiviti(sesi.id, 'TAMBAH_AHLI',
       'IC:' + ic + ' Kelab:' + idKelab);
     return { berjaya: true };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 /**
@@ -238,7 +238,7 @@ function tukarJawatanAhli(ic, idKelab, jawatan, token) {
   if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Tukar jawatan ahli', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var tetapan = getTetapan();
     var sheet = ss.getSheetByName('KEAHLIAN');
@@ -250,6 +250,7 @@ function tukarJawatanAhli(ic, idKelab, jawatan, token) {
           rekod[i][4] === tetapan.TAHUN_AKADEMIK &&
           rekod[i][5] === 'AKTIF') {
         sheet.getRange(i + 1, 4).setValue(jawatan);
+        batalCacheAnggaran_();
         logAktiviti(sesi.id, 'TUKAR_JAWATAN',
           'IC:' + ic + ' → ' + jawatan);
         return { berjaya: true };
@@ -257,9 +258,7 @@ function tukarJawatanAhli(ic, idKelab, jawatan, token) {
     }
     return { berjaya: false,
              mesej: 'Keahlian tidak dijumpai.' };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 /**
@@ -272,7 +271,7 @@ function buangAhliKelab(ic, idKelab, token) {
     return { berjaya: false,
              mesej: 'Hanya admin boleh membuang ahli.' };
 
-  try {
+  return denganKunciDokumen_('Nyahaktif ahli kelab', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var tetapan = getTetapan();
     var sheet = ss.getSheetByName('KEAHLIAN');
@@ -285,6 +284,7 @@ function buangAhliKelab(ic, idKelab, token) {
           rekod[i][5] === 'AKTIF') {
         sheet.getRange(i + 1, 6)
           .setValue('TIDAK AKTIF');
+        batalCacheAnggaran_();
         logAktiviti(sesi.id, 'BUANG_AHLI',
           'IC:' + ic + ' Kelab:' + idKelab);
         return { berjaya: true };
@@ -292,9 +292,7 @@ function buangAhliKelab(ic, idKelab, token) {
     }
     return { berjaya: false,
              mesej: 'Keahlian tidak dijumpai.' };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 // ============================================
@@ -397,7 +395,7 @@ function padamKeahlianKekal(ic, idKelab, token) {
     return { berjaya: false,
              mesej: 'Hanya admin boleh memadam.' };
 
-  try {
+  return denganKunciDokumen_('Padam keahlian kekal', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var tetapan = getTetapan();
     var sheet = ss.getSheetByName('KEAHLIAN');
@@ -408,6 +406,7 @@ function padamKeahlianKekal(ic, idKelab, token) {
           rekod[i][1] === idKelab &&
           samaNilai(rekod[i][4], tetapan.TAHUN_AKADEMIK)) {
         sheet.deleteRow(i + 1);
+        batalCacheAnggaran_();
         logAktiviti(sesi.id, 'PADAM_KEAHLIAN',
           'IC:' + ic + ' Kelab:' + idKelab);
         return { berjaya: true };
@@ -415,9 +414,7 @@ function padamKeahlianKekal(ic, idKelab, token) {
     }
     return { berjaya: false,
              mesej: 'Keahlian tidak dijumpai.' };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 
@@ -505,7 +502,7 @@ function tukarKelabAhli(ic, idKelabBaru, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false,
              mesej: 'Akses ditolak. Admin sahaja.' };
-  try {
+  return denganKunciDokumen_('Tukar kelab ahli', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var tetapan = getTetapan();
 
@@ -530,10 +527,11 @@ function tukarKelabAhli(ic, idKelabBaru, token) {
         if (rekod[i][1] === idKelabBaru)
           return { berjaya: false,
             mesej: 'Murid sudah dalam kelab ini.' };
-        sheet.getRange(i + 1, 2)
-          .setValue(idKelabBaru);
-        sheet.getRange(i + 1, 4)
-          .setValue('Ahli Biasa');
+        sheet.getRange(i + 1, 2, 1, 3)
+          .setValues([[
+            idKelabBaru, kategori, 'Ahli Biasa'
+          ]]);
+        batalCacheAnggaran_();
         logAktiviti(sesi.id, 'TUKAR_KELAB_AHLI',
           'IC:' + ic + ' → ' + idKelabBaru);
         return { berjaya: true };
@@ -542,7 +540,5 @@ function tukarKelabAhli(ic, idKelabBaru, token) {
     return { berjaya: false,
       mesej: 'Tiada keahlian ' + kategori +
         ' aktif untuk murid ini.' };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }

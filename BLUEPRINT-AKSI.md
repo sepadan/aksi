@@ -22,7 +22,7 @@
 > Sumber rujukan utama untuk menyambung projek menggunakan ChatGPT, Claude,
 > Codex, atau sistem lain. Baca fail ini sepenuhnya sebelum mengubah kod.
 
-**Dikemas kini:** 26 Ogos 2026, Asia/Kuala_Lumpur
+**Dikemas kini:** 27 Ogos 2026, Asia/Kuala_Lumpur
 **Repositori rasmi:** `https://github.com/sepadan/aksi`
 **Laman produksi calon:** `https://sepadan.github.io/aksi/`
 **Sistem lama:** Google Apps Script HtmlService — masih perlu dikekalkan
@@ -37,15 +37,16 @@ Keadaan semasa:
 
 | Bahagian | Status | Bukti/catatan |
 |---|---|---|
-| Kod Apps Script di GitHub | Siap | branch `main`, disahkan selaras 21 Ogos |
+| Kod Apps Script di GitHub | Siap dengan pengecualian diketahui | Modul berubah dalam Version 8 dicerminkan; `Code.gs` hanya sepadan bagi fungsi sasaran dan tidak boleh dipulihkan penuh |
 | GitHub Pages `/docs` | Hidup | halaman log masuk memberi HTTP 200 |
 | API rentas-domain | Siap | `getIdentitiAwam` memberi `ok:true`; CORS `*` |
 | Log masuk berkadar terhad | Kod siap | maksimum 5 cubaan, sekat 15 minit |
-| Pembersihan sesi lama | Kod siap | pemasangan pemicu harian belum disahkan |
+| Pembersihan sesi lama | Aktif | `cuciSesiLama` setiap hari; kadar ralat terakhir 0% |
+| Sandaran automatik | Aktif | `backupAutoTrigger` setiap Ahad, 2–3 pagi |
 | Halaman baca | Diuji separa | Dashboard disahkan memaparkan data sebenar |
 | Halaman tulis | Kod siap | ujian data sebenar belum disahkan |
 | Admin dan Setup | Kod siap | ujian akaun sebenar belum disahkan |
-| PWA | Siap dan diterbitkan | GitHub Pages run #26; manifest, ikon, luar talian dan auto-kemas kini lulus produksi |
+| PWA | Siap dan diterbitkan | v1.3.1; manifest, ikon, luar talian dan auto-kemas kini dikekalkan |
 | Pembuangan frontend lama | Belum | jangan buat sebelum semua ujian lulus |
 
 Pilihan log masuk yang telah dilaksanakan ialah mengekalkan akaun kongsi
@@ -394,7 +395,7 @@ butang yang pasti gagal. Perlindungan sebenar ialah `doPost`.
 - Ketika menu terbuka, skrol kandungan latar dikunci dan atribut
   `aria-expanded` dikemas kini supaya keadaan menu boleh difahami pembaca skrin.
 - AKSI kini PWA lengkap bernama `AKSI — Aplikasi Kokurikulum SK Paya Redan`,
-  versi paparan `AKSI v1.3.0 · PWA`. Ikon baharu menggunakan lambang sekolah
+  versi paparan `AKSI v1.3.1 · PWA`. Ikon baharu menggunakan lambang sekolah
   dengan lencana biru `AKSI`, dan digunakan pada sidebar, homescreen Android,
   ikon maskable, `apple-touch-icon` serta favicon.
 - `manifest.webmanifest`, `pwa.js`, `service-worker.js` dan `offline.html`
@@ -459,9 +460,35 @@ butang yang pasti gagal. Perlindungan sebenar ialah `doPost`.
   muatan kelas berlaku setempat dan segera; muatan kelas pertama kekal
   bergantung pada Google.
 
+### 7g. Kunci menyeluruh, import atomik dan sandaran — 27 Ogos 2026
+
+- Semua laluan mutasi yang ditemui dalam modul Kehadiran, Penilaian, PAJSK,
+  Pencapaian, Keahlian, Kelab, Laporan, Murid, Arkib, Tetapan, Setup dan Auth
+  kini masuk melalui kunci dokumen dengan had tunggu. Log aktiviti menggunakan
+  `ScriptLock` berasingan supaya catatan serentak tidak bertembung dengan
+  transaksi dokumen.
+- Import murid dan keahlian kini **mengesah dahulu, menulis kemudian**. IC
+  dinormalisasi; IC tidak sah atau berulang dan keahlian kategori berulang
+  membatalkan import sebelum helaian semasa dibersihkan atau diubah. Ini
+  mengelakkan import separuh siap dan kehilangan data apabila CSV bermasalah.
+- ID Pencapaian, Laporan dan metadata gambar menggunakan nombor maksimum + 1.
+  Metadata gambar, akaun guru dan kata laluan admin ditulis secara kelompok;
+  tiada lagi `appendRow()` atau tulisan Sheets dalam gelung bagi laluan ini.
+- Pengiraan PAJSK dikunci kerana ia turut menulis `PAJSK_SUMMARY`. Perubahan
+  keahlian/kelab/import turut membuang cache anggaran supaya data lama tidak
+  kekal selepas kemas kini.
+- Apps Script Version 8 diterbitkan pada URL yang sama. Semakan baca sahaja
+  `getIdentitiAwam` memulangkan `ok:true`, versi `AKSI v1.3.1`, peranan tetamu,
+  dan mengambil 2.514 saat. Pemilihan nama selepas data kelas dimuat masih
+  setempat dan tidak menggunakan rangkaian; cold start Google tidak diberi
+  janji masa tetap.
+- Dua pencetus produksi disahkan: `cuciSesiLama` harian dan
+  `backupAutoTrigger` setiap Ahad antara 2–3 pagi. Sandaran gagal secara selamat
+  jika kunci sedang digunakan dan kegagalan direkodkan pada Executions.
+
 ## 8. Pengesahan automatik terakhir
 
-Pada 24 Ogos 2026:
+Pada 27 Ogos 2026:
 
 - `https://sepadan.github.io/aksi/` memberi HTTP 200 dan tajuk
   `Log Masuk — AKSI`.
@@ -477,6 +504,12 @@ Pada 24 Ogos 2026:
 - Aset utama dan halaman contoh di GitHub sepadan dengan `docs/` tempatan.
 - Semua 10 skrip sebaris halaman HTML dan semua fail dalam `docs/js/` lulus
   semakan sintaks Node.js; jumlah ralat sintaks ialah sifar.
+- Semua fail `.gs` yang dicerminkan lulus semakan sintaks. Dua suite regresi
+  mengesahkan normalisasi IC, kunci semua laluan tulis, import sebelum tulis,
+  ID stabil, tulisan kelompok, pengawal PAJSK dan versi cache PWA.
+- Apps Script Version 8 membalas `getIdentitiAwam` dengan `ok:true` dan versi
+  `AKSI v1.3.1`. Halaman Triggers menunjukkan dua pencetus: sandaran mingguan
+  `backupAutoTrigger` dan pembersihan sesi `cuciSesiLama`.
 - Log masuk sebenar dari GitHub Pages berjaya dan membawa ke `dashboard.html`;
   dashboard memaparkan nombor sebenar, bukan tanda `-`.
 - Pembaikan logout diterbitkan melalui GitHub Pages run #19 (berjaya dalam
@@ -714,6 +747,7 @@ tindakan dicatat sebagai isu dalam hab; yang di sini diterima secara sedar.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
+| 27 Ogos 2026 | AKSI v1.3.1: kunci menyeluruh semua laluan mutasi, import murid/keahlian atomik, ID Laporan/Pencapaian/gambar stabil, tulisan kelompok Auth/Laporan, cache anggaran dibuang selepas perubahan dan sandaran mingguan diaktifkan | Apps Script Version 8 pada URL sama; semua fail GS sah sintaks; dua suite Node lulus; endpoint produksi `ok:true` dalam 2.514 saat; pencetus `backupAutoTrigger` Ahad 2–3 pagi dan `cuciSesiLama` disahkan | Sahkan satu operasi tulis sebenar untuk halaman yang masih tersenarai dalam isu hab #14; pantau larian sandaran pertama dalam Executions |
 | 26 Ogos 2026 | AKSI v1.3.0: normalisasi IC, LockService untuk kehadiran/penilaian/PAJSK, ID perjumpaan maksimum + 1, tulisan pukal, pengawal NaN dan satu muatan kelas untuk Penilaian | Apps Script Version 7 pada URL sama; dua suite Node lulus; endpoint produksi JSON `ok:true`; commit `bcbfa08` dan GitHub Pages run #33 berjaya; produksi menggunakan cache `20260826-8` | Sahkan satu operasi tulis sebenar dengan akaun guru ketika sekolah bersedia; cold start Apps Script tidak boleh dijamin di bawah 3 saat |
 | 26 Ogos 2026 | Pencapaian v1.2.1: baiki pilihan nama berapostrof/aksara khas, selamatkan paparan dinamik dan padam, pramuat senarai murid sekali lalu tapis setempat tanpa sela 400 ms | Ujian regresi Node lulus; GitHub Pages commit `526e884` dan Apps Script Version 6 diterbitkan; halaman/SW produksi HTTP 200, aset/cache `20260826-7`, event listener selamat dan tiada `onclick` pilihan murid dinamik | Sahkan sekali dengan akaun guru bahawa nama sebenar berapostrof boleh dipilih; tiada rekod pencapaian dibuat semasa ujian automatik |
 | 24 Ogos 2026 | PWA v1.2.0 lengkap: ikon AKSI berasaskan logo sekolah, manifest, ikon Android/iOS, Service Worker auto-kemas kini, halaman luar talian dan versi paparan baharu | GitHub Pages run #26 berjaya; produksi 390×844 mencapai `sedia`, 27 aset HTTP 200, API/data tidak dicache, menu dan mod luar talian lulus | Sahkan rupa ikon melalui satu pemasangan sebenar pada iPhone pengguna |

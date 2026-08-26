@@ -6,7 +6,7 @@ function simpanLaporan(data, gambar,
   if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Simpan laporan', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheetL = ss.getSheetByName('LAPORAN_PERJUMPAAN');
     var sheetG = ss.getSheetByName('GAMBAR_LAPORAN');
@@ -43,7 +43,12 @@ function simpanLaporan(data, gambar,
       }
     }
     if (!idLaporan) {
-      idLaporan = 'L' + String(sheetL.getLastRow())
+      var nomborLaporan = rekodL.slice(1)
+        .reduce(function(maks, r) {
+          var padan = String(r[0] || '').match(/^L(\d+)$/);
+          return padan ? Math.max(maks, Number(padan[1])) : maks;
+        }, 0) + 1;
+      idLaporan = 'L' + String(nomborLaporan)
         .padStart(4, '0');
     }
 
@@ -52,17 +57,28 @@ function simpanLaporan(data, gambar,
     if (gambarBuang && gambarBuang.length > 0 &&
         idLaporan) {
       var rekodG0 = sheetG.getDataRange().getValues();
-      for (var g = rekodG0.length - 1; g >= 1; g--) {
-        if (rekodG0[g][1] === idLaporan &&
-            gambarBuang.indexOf(rekodG0[g][0]) !== -1) {
+      var rekodGDisimpan = [rekodG0[0]];
+      var adaGambarDibuang = false;
+      for (var g = 1; g < rekodG0.length; g++) {
+        var perluBuang = rekodG0[g][1] === idLaporan &&
+          gambarBuang.indexOf(rekodG0[g][0]) !== -1;
+        if (perluBuang) {
           try {
             var mG = (rekodG0[g][3] || '')
               .match(/[-\w]{25,}/);
             if (mG) DriveApp.getFileById(mG[0])
               .setTrashed(true);
           } catch(eB) {}
-          sheetG.deleteRow(g + 1);
+          adaGambarDibuang = true;
+        } else {
+          rekodGDisimpan.push(rekodG0[g]);
         }
+      }
+      if (adaGambarDibuang) {
+        sheetG.getDataRange().clearContent();
+        sheetG.getRange(1, 1, rekodGDisimpan.length,
+          rekodGDisimpan[0].length)
+          .setValues(rekodGDisimpan);
       }
     }
 
@@ -72,6 +88,11 @@ function simpanLaporan(data, gambar,
     var bilSedia = rekodG.filter(function(r) {
       return r[1] === idLaporan;
     }).length;
+    var nomborGambarSeterus = rekodG.reduce(function(maks, r) {
+      if (r[1] !== idLaporan) return maks;
+      var padan = String(r[0] || '').match(/_G(\d+)$/);
+      return padan ? Math.max(maks, Number(padan[1])) : maks;
+    }, 0) + 1;
 
     // Had keselamatan server: maksimum 4 gambar
     // setiap laporan (termasuk sedia ada)
@@ -85,6 +106,7 @@ function simpanLaporan(data, gambar,
       var folderGambar = dapatkanFolderGambar(
         data.idKelab, tetapan
       );
+      var barisGambarBaru = [];
       gambar.forEach(function(g, i) {
         var blob = Utilities.newBlob(
           Utilities.base64Decode(g.data),
@@ -96,12 +118,17 @@ function simpanLaporan(data, gambar,
           DriveApp.Permission.VIEW
         );
         var idGambar = idLaporan + '_G' +
-          (bilSedia + i + 1);
-        sheetG.appendRow([
+          (nomborGambarSeterus + i);
+        barisGambarBaru.push([
           idGambar, idLaporan,
           g.nama, fail.getUrl()
         ]);
       });
+      if (barisGambarBaru.length > 0) {
+        sheetG.getRange(sheetG.getLastRow() + 1, 1,
+          barisGambarBaru.length, 4)
+          .setValues(barisGambarBaru);
+      }
     }
 
     // Senarai penuh gambar laporan ini (lama + baru)
@@ -143,9 +170,7 @@ function simpanLaporan(data, gambar,
       'Laporan:' + idLaporan +
       (barisSedia > 0 ? ' (edit)' : ' (baru)'));
     return { berjaya: true, idLaporan: idLaporan };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function dapatkanFolderGambar(idKelab, tetapan) {
@@ -427,7 +452,9 @@ function padamLaporanRaw(ss, idPerjumpaan) {
 
     // Padam gambar (fail Drive + baris)
     var rekodG = sheetG.getDataRange().getValues();
-    for (var g = rekodG.length - 1; g >= 1; g--) {
+    var rekodGDisimpan = [rekodG[0]];
+    var adaGambar = false;
+    for (var g = 1; g < rekodG.length; g++) {
       if (rekodG[g][1] === idLaporan) {
         try {
           var mG = (rekodG[g][3] || '')
@@ -435,8 +462,16 @@ function padamLaporanRaw(ss, idPerjumpaan) {
           if (mG) DriveApp.getFileById(mG[0])
             .setTrashed(true);
         } catch(eG) {}
-        sheetG.deleteRow(g + 1);
+        adaGambar = true;
+      } else {
+        rekodGDisimpan.push(rekodG[g]);
       }
+    }
+    if (adaGambar) {
+      sheetG.getDataRange().clearContent();
+      sheetG.getRange(1, 1, rekodGDisimpan.length,
+        rekodGDisimpan[0].length)
+        .setValues(rekodGDisimpan);
     }
 
     // Padam PDF
@@ -462,7 +497,7 @@ function padamLaporan(idPerjumpaan, token) {
     return { berjaya: false,
              mesej: 'Hanya admin boleh memadam.' };
 
-  try {
+  return denganKunciDokumen_('Padam laporan', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var ada = padamLaporanRaw(ss, idPerjumpaan);
     if (!ada)
@@ -471,7 +506,5 @@ function padamLaporan(idPerjumpaan, token) {
     logAktiviti(sesi.id, 'PADAM_LAPORAN',
       'Perjumpaan:' + idPerjumpaan);
     return { berjaya: true };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }

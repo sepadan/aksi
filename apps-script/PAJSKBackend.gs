@@ -29,6 +29,7 @@ var JADUAL_TUKAR = {
 function kiraPAJSK(ic, tahun, token) {
   if (!semakSesi(token)) return null;
 
+  return denganKunciDokumen_('Kira dan simpan PAJSK', function() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheetKeahlian = ss.getSheetByName('KEAHLIAN');
   var sheetPenilaian = ss.getSheetByName('PENILAIAN_KOKU');
@@ -152,6 +153,7 @@ function kiraPAJSK(ic, tahun, token) {
 
   simpanPAJSKSummary(ic, tahun, keputusan);
   return keputusan;
+  });
 }
 
 function kiraCGPA(ic, tahunSemasa, gpaSemasa) {
