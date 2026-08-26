@@ -53,6 +53,8 @@ function kiraPAJSK(ic, tahun, token) {
              samaNilai(r[4], tahun) &&
              r[5] === 'AKTIF';
     });
+  var semuaPenilaian = sheetPenilaian.getDataRange()
+    .getValues().slice(1);
 
   keahlian.forEach(function(k) {
     var kategori = k[2];
@@ -60,8 +62,7 @@ function kiraPAJSK(ic, tahun, token) {
     var kod = kategoriMap[kategori];
     if (!kod) return;
 
-    var penilaian = sheetPenilaian.getDataRange()
-      .getValues().slice(1).filter(function(r) {
+    var penilaian = semuaPenilaian.filter(function(r) {
         return samaNilai(r[0], ic) &&
                r[1] === idKelab &&
                samaNilai(r[2], tahun);
@@ -71,11 +72,17 @@ function kiraPAJSK(ic, tahun, token) {
     var markahPencapaian =
       getMarkahPencapaian(ic, idKelab, tahun);
 
-    var markahJawatan = penilaian ? penilaian[3] : 0;
-    var markahPenglibatan = penilaian ? penilaian[4] : 0;
-    var markahKomitmen = penilaian ? penilaian[5] : 0;
-    var markahKhidmat = penilaian ? penilaian[6] : 0;
-    var markahKehadiran = statKH.markahKehadiran || 0;
+    var markahJawatan = nomborSah_(
+      penilaian ? penilaian[3] : 0, 0);
+    var markahPenglibatan = nomborSah_(
+      penilaian ? penilaian[4] : 0, 0);
+    var markahKomitmen = nomborSah_(
+      penilaian ? penilaian[5] : 0, 0);
+    var markahKhidmat = nomborSah_(
+      penilaian ? penilaian[6] : 0, 0);
+    var markahKehadiran = nomborSah_(
+      statKH.markahKehadiran, 0);
+    markahPencapaian = nomborSah_(markahPencapaian, 0);
 
     var jumlah110 = markahJawatan + markahPenglibatan +
       markahKomitmen + markahKhidmat +
@@ -107,7 +114,7 @@ function kiraPAJSK(ic, tahun, token) {
   var markahEkstra = 0;
   if (ekstra.length > 0) {
     var markahList = ekstra.map(function(r) {
-      return r[5];
+      return nomborSah_(r[5], 0);
     });
     markahEkstra = Math.min(
       Math.max.apply(null, markahList), 10
@@ -128,10 +135,10 @@ function kiraPAJSK(ic, tahun, token) {
   var purata = duaTertinggi.length > 0 ?
     jumlahDua / 2 : 0;
 
-  var gpa = Math.round(
-    (purata + markahEkstra) * 100) / 100;
-  var cgpa = kiraCGPA(ic, tahun, gpa);
-  var markah10 = Math.round(cgpa * 10) / 100;
+  var gpa = nomborSah_(Math.round(
+    (purata + markahEkstra) * 100) / 100, 0);
+  var cgpa = nomborSah_(kiraCGPA(ic, tahun, gpa), 0);
+  var markah10 = nomborSah_(Math.round(cgpa * 10) / 100, 0);
   // TL jika murid tiada langsung aktiviti kokurikulum
   var gred = (!keputusan.KP && !keputusan.PBB &&
               !keputusan.SP) ?
@@ -151,7 +158,8 @@ function kiraCGPA(ic, tahunSemasa, gpaSemasa) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('PAJSK_SUMMARY');
   var data = sheet.getDataRange().getValues().slice(1);
-  var tahunInt = parseInt(tahunSemasa);
+  var tahunInt = parseInt(tahunSemasa, 10);
+  gpaSemasa = nomborSah_(gpaSemasa, 0);
 
   // SEKOLAH MENENGAH: kumulatif berperingkat
   // CGPA = (CGPA tahun lepas + GPA semasa) / 2
@@ -163,7 +171,7 @@ function kiraCGPA(ic, tahunSemasa, gpaSemasa) {
                (tahunInt - 1).toString();
     })[0];
     if (lepas && lepas[7]) {
-      return Math.round(((Number(lepas[7]) +
+      return Math.round(((nomborSah_(lepas[7], 0) +
         gpaSemasa) / 2) * 100) / 100;
     }
     return Math.round(gpaSemasa * 100) / 100;
@@ -182,7 +190,7 @@ function kiraCGPA(ic, tahunSemasa, gpaSemasa) {
              r[1].toString() === tahunLepas;
     })[0];
     if (rekod && rekod[6]) {
-      jumlahGPA += Number(rekod[6]);
+      jumlahGPA += nomborSah_(rekod[6], 0);
       bilTahun++;
     }
   }
@@ -339,8 +347,9 @@ function kiraAnggaranBatch(senaraiIC) {
 
   var muridMap = {};
   dataMurid.forEach(function(r) {
-    muridMap[String(r[0]).trim()] = {
-      ic: r[0], nama: r[1],
+    var kunciIc = normalisasiIC(r[0]) || String(r[0]).trim();
+    muridMap[kunciIc] = {
+      ic: kunciIc, nama: r[1],
       tahun: parseInt(r[2]) || 0,
       kelas: r[4], status: r[8]
     };
@@ -362,7 +371,8 @@ function kiraAnggaranBatch(senaraiIC) {
     if (r[2] !== 'Hadir') return;
     var kelab = kelabPerjumpaan[r[0]];
     if (!kelab) return;
-    var kunci = String(r[1]).trim() + '|' + kelab;
+    var kunciIc = normalisasiIC(r[1]) || String(r[1]).trim();
+    var kunci = kunciIc + '|' + kelab;
     hadirMap[kunci] = (hadirMap[kunci] || 0) + 1;
   });
 
@@ -386,7 +396,7 @@ function kiraAnggaranBatch(senaraiIC) {
   };
 
   return senaraiIC.map(function(icAsal) {
-    var ic = String(icAsal).trim();
+    var ic = normalisasiIC(icAsal) || String(icAsal).trim();
     var murid = muridMap[ic];
     if (!murid) return null;
 
@@ -632,18 +642,29 @@ function getAnggaranMurid(ic, token) {
 function getAnggaranKelas(kelas, token) {
   if (!semakSesi(token)) return null;
   var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var tetapan = getTetapan();
+  var revisi = revisiCacheAnggaran_();
+  var kunciCache = 'ANGGARAN_KELAS_V2_' +
+    String(tetapan.TAHUN_AKADEMIK) + '_' +
+    Utilities.base64EncodeWebSafe(String(kelas)) + '_' + revisi;
+  var cache = cacheDapatkan(kunciCache);
+  if (cache) return cache;
   var senaraiIC = ss.getSheetByName('MURID_MASTER')
     .getDataRange().getValues().slice(1)
     .filter(function(r) {
       return r[8] === 'AKTIF' && r[4] === kelas;
     })
-    .map(function(r) { return String(r[0]).trim(); });
+    .map(function(r) {
+      return normalisasiIC(r[0]) || String(r[0]).trim();
+    });
 
-  return kiraAnggaranBatch(senaraiIC)
+  var hasil = kiraAnggaranBatch(senaraiIC)
     .filter(function(a) { return a; })
     .sort(function(a, b) {
       return a.nama.localeCompare(b.nama);
     });
+  cacheSimpan(kunciCache, hasil, 120);
+  return hasil;
 }
 
 
@@ -657,7 +678,7 @@ function simpanAnggaranKeRekod(ic, token) {
   if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Simpan rekod PAJSK', function() {
     var a = kiraAnggaranBatch([ic])[0];
     if (!a)
       return { berjaya: false,
@@ -666,9 +687,10 @@ function simpanAnggaranKeRekod(ic, token) {
       return { berjaya: false,
                mesej: 'PAJSK untuk Tahun 4-6 sahaja.' };
 
-    var cgpa = kiraCGPA(String(a.ic),
-      a.tahunAkademik, a.gpa);
-    var markah10 = Math.round(cgpa * 10) / 100;
+    var cgpa = nomborSah_(kiraCGPA(String(a.ic),
+      a.tahunAkademik, a.gpa), 0);
+    var markah10 = nomborSah_(
+      Math.round(cgpa * 10) / 100, 0);
 
     simpanPAJSKSummary(String(a.ic), a.tahunAkademik, {
       KP: a.kategori.KP !== null ?
@@ -686,11 +708,10 @@ function simpanAnggaranKeRekod(ic, token) {
 
     logAktiviti(sesi.id, 'SIMPAN_PAJSK',
       'IC:' + ic + ' GPA:' + a.gpa);
+    batalCacheAnggaran_();
     return {
       berjaya: true, gpa: a.gpa, cgpa: cgpa,
       markah10: markah10, gred: a.gred
     };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }

@@ -22,7 +22,7 @@
 > Sumber rujukan utama untuk menyambung projek menggunakan ChatGPT, Claude,
 > Codex, atau sistem lain. Baca fail ini sepenuhnya sebelum mengubah kod.
 
-**Dikemas kini:** 24 Ogos 2026, Asia/Kuala_Lumpur
+**Dikemas kini:** 26 Ogos 2026, Asia/Kuala_Lumpur
 **Repositori rasmi:** `https://github.com/sepadan/aksi`
 **Laman produksi calon:** `https://sepadan.github.io/aksi/`
 **Sistem lama:** Google Apps Script HtmlService — masih perlu dikekalkan
@@ -394,7 +394,7 @@ butang yang pasti gagal. Perlindungan sebenar ialah `doPost`.
 - Ketika menu terbuka, skrol kandungan latar dikunci dan atribut
   `aria-expanded` dikemas kini supaya keadaan menu boleh difahami pembaca skrin.
 - AKSI kini PWA lengkap bernama `AKSI — Aplikasi Kokurikulum SK Paya Redan`,
-  versi paparan `AKSI v1.2.1 · PWA`. Ikon baharu menggunakan lambang sekolah
+  versi paparan `AKSI v1.3.0 · PWA`. Ikon baharu menggunakan lambang sekolah
   dengan lencana biru `AKSI`, dan digunakan pada sidebar, homescreen Android,
   ikon maskable, `apple-touch-icon` serta favicon.
 - `manifest.webmanifest`, `pwa.js`, `service-worker.js` dan `offline.html`
@@ -427,6 +427,38 @@ butang yang pasti gagal. Perlindungan sebenar ialah `doPost`.
 - Semua panggilan pelayan utama Pencapaian mempunyai pengendali kegagalan agar
   tirai memuat tidak tergantung tanpa mesej.
 
+### 7f. Kestabilan data dan Penilaian pantas — 26 Ogos 2026
+
+- Audit silang Gemini/Claude disemak semula terhadap kod dan editor Apps Script
+  sebenar. Dakwaan mengenai `aksi_data.json`, kata laluan di klien, ketiadaan
+  mampatan gambar, ketiadaan `Semua Hadir`, ketiadaan loading dan jadual
+  kehadiran mendatar tidak menggambarkan AKSI sebenar.
+- Risiko IC memang wujud tetapi sebabnya diperincikan: nombor 12 digit masih
+  tepat dalam JavaScript, dan `samaNilai()` lama sudah menyamakan nombor dengan
+  teks. Jurang sebenar ialah tanda sempang/ruang dan sifar awal yang telah
+  hilang apabila sel Sheets disimpan sebagai nombor. `normalisasiIC()` kini
+  menapis digit dan memulihkan panjang 12 digit sebelum padanan. IC yang keluar
+  daripada PAJSK turut dinormal supaya penapis IC tetamu terus berkesan.
+- Operasi tulis kehadiran, penilaian dan simpanan PAJSK kini melalui
+  `LockService` dengan masa tunggu 10 saat. Dua guru tidak lagi boleh menindih
+  satu operasi berbilang baris secara senyap. ID perjumpaan menggunakan nombor
+  maksimum + 1, bukan `lastRow`, supaya ID lama tidak diguna semula selepas
+  pemadaman.
+- Penilaian terperinci ditulis secara pukal; gelung `deleteRow()` dan
+  `appendRow()` dibuang. Pengiraan PAJSK membaca tab `PENILAIAN_KOKU` sekali
+  bagi satu pengiraan dan menukar `NaN`/`Infinity` kepada nilai selamat.
+- Memilih kelas mengambil satu hasil `getAnggaranKelas()`. Hasil disimpan 120
+  saat dalam `CacheService` pelayan dan dalam memori halaman sehingga halaman
+  ditutup. Menekan nama selepas kelas dimuat tidak lagi menghubungi rangkaian;
+  sasaran responsnya di bawah satu saat. Nama dan IC tidak ditulis ke
+  `localStorage`, `sessionStorage` atau Cache Storage PWA.
+- Masa Apps Script pertama tidak boleh dijamin di bawah satu saat kerana cold
+  start dan rangkaian Google. Ujian produksi Version 7 merekod respons identiti
+  3.57 saat selepas penerbitan, manakala tiga bacaan anggaran kelas mengambil
+  1.35, 3.90 dan 1.40 saat. Jaminan yang munasabah ialah pemilihan nama selepas
+  muatan kelas berlaku setempat dan segera; muatan kelas pertama kekal
+  bergantung pada Google.
+
 ## 8. Pengesahan automatik terakhir
 
 Pada 24 Ogos 2026:
@@ -437,9 +469,11 @@ Pada 24 Ogos 2026:
   `api.js`, `app.js`) yang diterbitkan memberi HTTP 200.
 - Panggilan POST `getIdentitiAwam` ke URL `/exec` memberi `ok:true`, identiti
   SK Paya Redan, tahun 2026, dan header CORS `*`.
-- `Auth.gs`, `Code.gs`, `Murid.gs`, dan `WebBackend.gs` di GitHub sepadan tepat
-  dengan folder patch tempatan. Disemak semula secara berasingan: `Auth.gs` di
-  GitHub mengandungi `MAKS_CUBAAN` dan `bukaSekatan`.
+- `Auth.gs`, `Murid.gs`, dan `WebBackend.gs` di GitHub sepadan dengan folder
+  patch tempatan. `Code.gs` dalam cerminan diketahui masih mempunyai blok
+  `doPost` lama; hanya pembantu kestabilan/IC 26 Ogos diselaraskan. Jangan
+  pulihkan keseluruhan fail itu ke editor. `Auth.gs` disemak semula mengandungi
+  `MAKS_CUBAAN` dan `bukaSekatan`.
 - Aset utama dan halaman contoh di GitHub sepadan dengan `docs/` tempatan.
 - Semua 10 skrip sebaris halaman HTML dan semua fail dalam `docs/js/` lulus
   semakan sintaks Node.js; jumlah ralat sintaks ialah sifar.
@@ -475,6 +509,12 @@ Pada 24 Ogos 2026:
   `onclick` dinamik untuk pilihan murid, dan mengandungi event listener selamat.
   Ujian regresi turut menyemak kedua-dua salinan Pencapaian, semua fail JS dan
   semua skrip sebaris dalam `docs/` tanpa ralat sintaks.
+- Backend kestabilan v1.3.0 diterbitkan sebagai Apps Script Version 7 pada
+  26 Ogos 2026 menggunakan deployment ID dan URL produksi yang sama. Ujian
+  baca sahaja selepas lengah penerbitan memberi JSON `ok:true`; ujian tidak
+  menulis rekod sekolah dan tidak mencetak nama atau IC. Dua suite Node turut
+  mengesahkan sintaks, normalisasi IC, kunci tulis, tulisan pukal, pengawal
+  PAJSK, cache kelas dan pemilihan setempat.
 
 Pengesahan ini tidak membuktikan operasi baca/tulis setiap modul. Kata laluan
 tidak tersedia dan tidak patut direkod dalam repo.
@@ -672,6 +712,7 @@ tindakan dicatat sebagai isu dalam hab; yang di sini diterima secara sedar.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
+| 26 Ogos 2026 | AKSI v1.3.0: normalisasi IC, LockService untuk kehadiran/penilaian/PAJSK, ID perjumpaan maksimum + 1, tulisan pukal, pengawal NaN dan satu muatan kelas untuk Penilaian | Apps Script Version 7 pada URL sama; dua suite Node lulus; endpoint produksi JSON `ok:true`; pilihan nama selepas kelas dimuat tidak membuat panggilan rangkaian | Sahkan satu operasi tulis sebenar dengan akaun guru ketika sekolah bersedia; cold start Apps Script tidak boleh dijamin di bawah 3 saat |
 | 26 Ogos 2026 | Pencapaian v1.2.1: baiki pilihan nama berapostrof/aksara khas, selamatkan paparan dinamik dan padam, pramuat senarai murid sekali lalu tapis setempat tanpa sela 400 ms | Ujian regresi Node lulus; GitHub Pages commit `526e884` dan Apps Script Version 6 diterbitkan; halaman/SW produksi HTTP 200, aset/cache `20260826-7`, event listener selamat dan tiada `onclick` pilihan murid dinamik | Sahkan sekali dengan akaun guru bahawa nama sebenar berapostrof boleh dipilih; tiada rekod pencapaian dibuat semasa ujian automatik |
 | 24 Ogos 2026 | PWA v1.2.0 lengkap: ikon AKSI berasaskan logo sekolah, manifest, ikon Android/iOS, Service Worker auto-kemas kini, halaman luar talian dan versi paparan baharu | GitHub Pages run #26 berjaya; produksi 390×844 mencapai `sedia`, 27 aset HTTP 200, API/data tidak dicache, menu dan mod luar talian lulus | Sahkan rupa ikon melalui satu pemasangan sebenar pada iPhone pengguna |
 | 24 Ogos 2026 | Menu mudah alih boleh ditutup melalui `×`, kawasan luar, `Escape` atau pautan; penilaian PWA direkodkan | GitHub Pages run #24 berjaya; produksi 390×844 lulus untuk tiga cara tutup, sasaran 44×44, tiada ralat JS; CSS/JS versi `20260824-3` | Sahkan sekali pada iPhone pengguna; jika PWA diteruskan, cache aset statik sahaja |

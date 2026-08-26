@@ -5,41 +5,40 @@ function simpanKomitmen(ic, idKelab, aspek, token) {
   if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Simpan komitmen', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('KOMITMEN_DETAIL');
     var tetapan = getTetapan();
     var tahun = tetapan.TAHUN_AKADEMIK;
 
-    var data = sheet.getDataRange().getValues();
-    for (var i = data.length - 1; i >= 1; i--) {
-      if (samaNilai(data[i][0], ic) &&
-          data[i][1] === idKelab &&
-          samaNilai(data[i][2], tahun)) {
-        sheet.deleteRow(i + 1);
-      }
-    }
-
     var aspekDipilih = aspek.slice(0, 4);
-    aspekDipilih.forEach(function(a) {
-      sheet.appendRow([
-        ic, idKelab, tahun, a.nama, a.markah
-      ]);
+    var data = sheet.getDataRange().getValues();
+    var rekod = data.slice(1).filter(function(r) {
+      return !(samaNilai(r[0], ic) &&
+        r[1] === idKelab && samaNilai(r[2], tahun));
     });
+    aspekDipilih.forEach(function(a) {
+      rekod.push([ic, idKelab, tahun, a.nama,
+        nomborSah_(a.markah, 0)]);
+    });
+    if (sheet.getLastRow() > 1)
+      sheet.getRange(2, 1, sheet.getLastRow() - 1, 5)
+        .clearContent();
+    if (rekod.length)
+      sheet.getRange(2, 1, rekod.length, 5).setValues(rekod);
 
     var jumlah = aspekDipilih.reduce(function(sum, a) {
-      return sum + a.markah;
+      return sum + nomborSah_(a.markah, 0);
     }, 0);
 
     kemaskiniPenilaianKoku(ic, idKelab, tahun,
       'MARKAH_KOMITMEN', jumlah);
 
+    batalCacheAnggaran_();
     logAktiviti(sesi.id, 'SIMPAN_KOMITMEN',
       'IC:' + ic + ' Kelab:' + idKelab);
     return { berjaya: true, markah: jumlah };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function simpanKhidmat(ic, idKelab, jenis,
@@ -48,17 +47,16 @@ function simpanKhidmat(ic, idKelab, jenis,
   if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Simpan khidmat', function() {
     var tetapan = getTetapan();
     var tahun = tetapan.TAHUN_AKADEMIK;
     kemaskiniPenilaianKoku(ic, idKelab, tahun,
-      'MARKAH_KHIDMAT', markah);
+      'MARKAH_KHIDMAT', nomborSah_(markah, 0));
+    batalCacheAnggaran_();
     logAktiviti(sesi.id, 'SIMPAN_KHIDMAT',
       'IC:' + ic + ' Jenis:' + jenis);
-    return { berjaya: true, markah: markah };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+    return { berjaya: true, markah: nomborSah_(markah, 0) };
+  });
 }
 
 function simpanPenglibatan(ic, idKelab, jenis,
@@ -67,17 +65,16 @@ function simpanPenglibatan(ic, idKelab, jenis,
   if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Simpan penglibatan', function() {
     var tetapan = getTetapan();
     var tahun = tetapan.TAHUN_AKADEMIK;
     kemaskiniPenilaianKoku(ic, idKelab, tahun,
-      'MARKAH_PENGLIBATAN', markah);
+      'MARKAH_PENGLIBATAN', nomborSah_(markah, 0));
+    batalCacheAnggaran_();
     logAktiviti(sesi.id, 'SIMPAN_PENGLIBATAN',
       'IC:' + ic + ' Peringkat:' + peringkat);
-    return { berjaya: true, markah: markah };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+    return { berjaya: true, markah: nomborSah_(markah, 0) };
+  });
 }
 
 function simpanJawatan(ic, idKelab, jawatan,
@@ -86,7 +83,7 @@ function simpanJawatan(ic, idKelab, jawatan,
   if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Simpan jawatan', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var tetapan = getTetapan();
     var tahun = tetapan.TAHUN_AKADEMIK;
@@ -103,13 +100,12 @@ function simpanJawatan(ic, idKelab, jawatan,
     }
 
     kemaskiniPenilaianKoku(ic, idKelab, tahun,
-      'MARKAH_JAWATAN', markah);
+      'MARKAH_JAWATAN', nomborSah_(markah, 0));
+    batalCacheAnggaran_();
     logAktiviti(sesi.id, 'SIMPAN_JAWATAN',
       'IC:' + ic + ' Jawatan:' + jawatan);
-    return { berjaya: true, markah: markah };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+    return { berjaya: true, markah: nomborSah_(markah, 0) };
+  });
 }
 
 function kemaskiniPenilaianKoku(ic, idKelab,
@@ -178,32 +174,32 @@ function simpanEkstra(ic, data, token) {
   if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  try {
+  return denganKunciDokumen_('Simpan ekstra kurikulum', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('EKSTRA_KURIKULUM');
     var tetapan = getTetapan();
     var tahun = tetapan.TAHUN_AKADEMIK;
 
-    var rekod = sheet.getDataRange().getValues();
-    for (var i = rekod.length - 1; i >= 1; i--) {
-      if (samaNilai(rekod[i][0], ic) &&
-          samaNilai(rekod[i][1], tahun) &&
-          rekod[i][2] === data.jenis) {
-        sheet.deleteRow(i + 1);
-      }
-    }
-
-    sheet.appendRow([
+    var semua = sheet.getDataRange().getValues();
+    var rekod = semua.slice(1).filter(function(r) {
+      return !(samaNilai(r[0], ic) &&
+        samaNilai(r[1], tahun) && r[2] === data.jenis);
+    });
+    rekod.push([
       ic, tahun, data.jenis,
-      data.perkara, data.peringkat, data.markah
+      data.perkara, data.peringkat, nomborSah_(data.markah, 0)
     ]);
+    if (sheet.getLastRow() > 1)
+      sheet.getRange(2, 1, sheet.getLastRow() - 1, 6)
+        .clearContent();
+    if (rekod.length)
+      sheet.getRange(2, 1, rekod.length, 6).setValues(rekod);
 
+    batalCacheAnggaran_();
     logAktiviti(sesi.id, 'SIMPAN_EKSTRA',
       'IC:' + ic + ' Jenis:' + data.jenis);
     return { berjaya: true };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function getEkstraMurid(ic, token) {

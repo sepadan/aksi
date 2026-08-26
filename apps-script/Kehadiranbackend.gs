@@ -40,13 +40,13 @@ function getSenaraiKelab(token) {
 }
 
 function buatPerjumpaan(data, token) {
-  if (!semakSesi(token))
+  var sesi = semakSesi(token);
+  if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
-  try {
+  return denganKunciDokumen_('Buat perjumpaan', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('PERJUMPAAN');
-    var jumlah = sheet.getLastRow();
-    var idBaru = 'P' + String(jumlah).padStart(4, '0');
+    var idBaru = idPerjumpaanBaru_(sheet);
 
     var bilAhli = populateKehadiran(idBaru,
       data.idKelab);
@@ -56,15 +56,26 @@ function buatPerjumpaan(data, token) {
       data.tarikh, data.masa, data.tempat,
       0, bilAhli
     ]);
-    logAktiviti(semakSesi(token).id,
+    batalCacheAnggaran_();
+    logAktiviti(sesi.id,
       'BUAT_PERJUMPAAN',
       'Kelab:' + data.idKelab +
       ' Tarikh:' + data.tarikh);
 
     return { berjaya: true, idPerjumpaan: idBaru };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
+  });
+}
+
+function idPerjumpaanBaru_(sheet) {
+  var maks = 0;
+  if (sheet.getLastRow() > 1) {
+    sheet.getRange(2, 1, sheet.getLastRow() - 1, 1)
+      .getDisplayValues().forEach(function(r) {
+        var padan = String(r[0] || '').match(/^P(\d+)$/i);
+        if (padan) maks = Math.max(maks, Number(padan[1]) || 0);
+      });
   }
+  return 'P' + String(maks + 1).padStart(4, '0');
 }
 
 function populateKehadiran(idPerjumpaan, idKelab) {
@@ -125,9 +136,10 @@ function getKehadiran(idPerjumpaan, token) {
 
 function simpanKehadiran(idPerjumpaan,
                           dataKehadiran, token) {
-  if (!semakSesi(token))
+  var sesi = semakSesi(token);
+  if (!sesi)
     return { berjaya: false, mesej: 'Sesi tamat.' };
-  try {
+  return denganKunciDokumen_('Simpan kehadiran', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('KEHADIRAN');
     var lastRow = sheet.getLastRow();
@@ -152,7 +164,8 @@ function simpanKehadiran(idPerjumpaan,
 
     var peta = {};
     (dataKehadiran || []).forEach(function(it) {
-      peta[String(it.ic).trim()] = it.status;
+      var kunciIc = normalisasiIC(it.ic) || String(it.ic).trim();
+      peta[kunciIc] = it.status;
     });
 
     var blok = sheet.getRange(mula + 2, 1,
@@ -160,7 +173,8 @@ function simpanKehadiran(idPerjumpaan,
     var hadir = 0, jumlah = 0;
     blok.forEach(function(r) {
       if (r[0] !== idPerjumpaan) return;
-      var s = peta[String(r[1]).trim()];
+      var kunciIc = normalisasiIC(r[1]) || String(r[1]).trim();
+      var s = peta[kunciIc];
       if (s !== undefined) r[2] = s;
       jumlah++;
       if (r[2] === 'Hadir') hadir++;
@@ -173,13 +187,12 @@ function simpanKehadiran(idPerjumpaan,
     kemaskiniKiraanPerjumpaan(idPerjumpaan,
       hadir, jumlah);
 
-    logAktiviti(semakSesi(token).id,
+    batalCacheAnggaran_();
+    logAktiviti(sesi.id,
       'SIMPAN_KEHADIRAN',
       'Perjumpaan:' + idPerjumpaan);
     return { berjaya: true };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 function getPerjumpaanKelab(idKelab, token) {
@@ -295,7 +308,7 @@ function padamPerjumpaan(idPerjumpaan, token) {
     return { berjaya: false,
              mesej: 'Hanya admin boleh memadam.' };
 
-  try {
+  return denganKunciDokumen_('Padam perjumpaan', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
     // 1. Padam laporan + gambar + PDF (jika ada)
@@ -318,14 +331,13 @@ function padamPerjumpaan(idPerjumpaan, token) {
         sheetP.deleteRow(j + 1);
         logAktiviti(sesi.id, 'PADAM_PERJUMPAAN',
           'ID:' + idPerjumpaan);
+        batalCacheAnggaran_();
         return { berjaya: true };
       }
     }
     return { berjaya: false,
              mesej: 'Perjumpaan tidak dijumpai.' };
-  } catch(e) {
-    return { berjaya: false, mesej: e.toString() };
-  }
+  });
 }
 
 

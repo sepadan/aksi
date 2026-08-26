@@ -9,13 +9,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="AKSI">
-    <link rel="manifest" href="manifest.webmanifest?v=1.2.1">
-    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=1.2.1">
-    <link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png?v=1.2.1">
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=1.2.1">
+    <link rel="manifest" href="manifest.webmanifest?v=1.3.0">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=1.3.0">
+    <link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png?v=1.3.0">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=1.3.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Penilaian Koku — AKSI</title>
-    <link rel="stylesheet" href="css/style.css?v=20260826-7">
+    <link rel="stylesheet" href="css/style.css?v=20260826-8">
     <style>
       .jadual-anggaran {
         width: 100%;
@@ -144,14 +144,18 @@
 
     </div>
 
-      <script src="js/config.js?v=20260826-7"></script>
-  <script src="js/api.js?v=20260826-7"></script>
-  <script src="js/app.js?v=20260826-7"></script>
+      <script src="js/config.js?v=20260826-8"></script>
+  <script src="js/api.js?v=20260826-8"></script>
+  <script src="js/app.js?v=20260826-8"></script>
     <script>
 
       let mod = 'murid';
       let anggaran = null;
       let autoPilihMurid = null;
+      // Cache MEMORI sahaja. Tiada nama/IC disimpan dalam
+      // localStorage, sessionStorage atau Cache Storage PWA.
+      let cacheAnggaranKelas = {};
+      let versiPermintaanKelas = 0;
 
       document.addEventListener('DOMContentLoaded',
         function() {
@@ -214,23 +218,47 @@
           .style.display = 'none';
         document.getElementById('bar-nav-murid')
           .style.display = 'none';
+        const versi = ++versiPermintaanKelas;
 
+        if (cacheAnggaranKelas[kelas]) {
+          isiSenaraiMuridKelas_(kelas,
+            cacheAnggaranKelas[kelas]);
+          return;
+        }
+
+        tunjukLoading(true);
         google.script.run
           .withSuccessHandler(function(data) {
-            (data || []).forEach(m => {
-              const o = document.createElement('option');
-              o.value = m.ic;
-              o.textContent = m.nama;
-              selM.appendChild(o);
-            });
-            if (autoPilihMurid) {
-              selM.value = autoPilihMurid;
-              autoPilihMurid = null;
-              if (selM.value) muatMurid();
-            }
+            if (versi !== versiPermintaanKelas) return;
+            tunjukLoading(false);
+            cacheAnggaranKelas[kelas] = data || [];
+            isiSenaraiMuridKelas_(kelas,
+              cacheAnggaranKelas[kelas]);
           })
-          .getSenaraiIkutKelas(kelas,
+          .withFailureHandler(function(e) {
+            if (versi !== versiPermintaanKelas) return;
+            tunjukLoading(false);
+            tunjukToast('Ralat: ' + e.message, 'ralat');
+          })
+          .getAnggaranKelas(kelas,
             AKSI.token());
+      }
+
+      function isiSenaraiMuridKelas_(kelas, data) {
+        const selM = document.getElementById('pilih-murid');
+        selM.innerHTML =
+          '<option value="">-- Pilih Murid --</option>';
+        (data || []).forEach(function(m) {
+          const o = document.createElement('option');
+          o.value = m.ic;
+          o.textContent = m.nama;
+          selM.appendChild(o);
+        });
+        if (autoPilihMurid) {
+          selM.value = autoPilihMurid;
+          autoPilihMurid = null;
+          if (selM.value) muatMurid();
+        }
       }
 
       function muatMurid() {
@@ -243,6 +271,20 @@
             .style.display = 'none';
           document.getElementById('bar-nav-murid')
             .style.display = 'none';
+          return;
+        }
+
+        const kelas = document.getElementById(
+          'pilih-kelas').value;
+        const sedia = (cacheAnggaranKelas[kelas] || [])
+          .filter(function(a) {
+            return String(a.ic) === String(ic);
+          })[0];
+        if (sedia) {
+          anggaran = sedia;
+          renderMurid();
+          renderAnggaran();
+          kemaskiniNavMurid();
           return;
         }
 
@@ -340,6 +382,11 @@
           .innerHTML = html;
       }
 
+      function nomborPaparan_(nilai) {
+        const nombor = Number(nilai);
+        return isFinite(nombor) ? nombor : 0;
+      }
+
       function renderAnggaran() {
         const div = document.getElementById('kad-anggaran');
         if (!anggaran || !anggaran.layakTaksir ||
@@ -348,6 +395,9 @@
           return;
         }
         const a = anggaran;
+        const gpa = nomborPaparan_(a.gpa);
+        const perluUntukA = nomborPaparan_(a.perluUntukA);
+        const gpaMaks = nomborPaparan_(a.gpaMaks);
         const kat = v => v === null ?
           '<span class="tag-tiada">—</span>' :
           '<b>' + v + '</b>';
@@ -373,7 +423,7 @@
           '<br><span class="masa-text">2 tertinggi ÷ 2 ' +
           '+ ekstra</span></td>' +
           '<td style="font-size:17px"><b>' +
-          a.gpa.toFixed(2) + '</b> · Gred <b>' + a.gred +
+          gpa.toFixed(2) + '</b> · Gred <b>' + a.gred +
           '</b></td></tr>' +
           '</table>';
 
@@ -385,13 +435,13 @@
         } else {
           html += '<p style="font-size:13px;' +
             ' margin-top:12px"><b>Untuk gred A (GPA ≥ 80):' +
-            ' perlu +' + a.perluUntukA.toFixed(2) +
+            ' perlu +' + perluUntukA.toFixed(2) +
             ' markah lagi.</b></p>';
-          if (a.gpaMaks < 80) {
+          if (gpaMaks < 80) {
             html += '<p class="upload-sub"' +
               ' style="color:#b26a00">⚠️ Dengan bilangan ' +
               'kategori semasa, GPA maksimum ialah ' +
-              a.gpaMaks.toFixed(2) +
+              gpaMaks.toFixed(2) +
               ' — gred A memerlukan penyertaan kategori ' +
               'tambahan.</p>';
           }
@@ -466,11 +516,16 @@
 
       // ===== MOD KELAS =====
       function muatAnggaranKelas(kelas) {
+        if (cacheAnggaranKelas[kelas]) {
+          renderKelas(cacheAnggaranKelas[kelas]);
+          return;
+        }
         tunjukLoading(true);
         google.script.run
           .withSuccessHandler(function(data) {
             tunjukLoading(false);
-            renderKelas(data || []);
+            cacheAnggaranKelas[kelas] = data || [];
+            renderKelas(cacheAnggaranKelas[kelas]);
           })
           .withFailureHandler(function(e) {
             tunjukLoading(false);
@@ -509,10 +564,10 @@
             '<td style="text-align:left">' + a.nama +
             '</td>' +
             '<td>' + a.kelab.length + '</td>' +
-            (t4 ? '<td><b>' + a.gpa.toFixed(2) +
+            (t4 ? '<td><b>' + nomborPaparan_(a.gpa).toFixed(2) +
               '</b></td><td>' + a.gred + '</td>' +
               '<td>' + (a.gred === 'A' ? '✅' :
-                '+' + a.perluUntukA.toFixed(2)) +
+                '+' + nomborPaparan_(a.perluUntukA).toFixed(2)) +
               '</td>' : '') +
             '</tr>';
         });
@@ -528,6 +583,6 @@
       }
 
     </script>
-    <script src="js/pwa.js?v=20260826-7"></script>
+    <script src="js/pwa.js?v=20260826-8"></script>
   </body>
 </html>

@@ -486,6 +486,48 @@ function cacheBuang(kunci) {
   } catch(e) {}
 }
 
+// KUNCI TULIS (v3.4) — semua operasi berbilang tab/baris
+// mesti selesai sebagai satu unit supaya dua guru tidak
+// menindih perubahan satu sama lain.
+function denganKunciDokumen_(namaOperasi, kerja) {
+  var kunci = LockService.getDocumentLock();
+  if (!kunci.tryLock(10000)) {
+    return {
+      berjaya: false,
+      mesej: 'Sistem sedang menyimpan perubahan guru lain. ' +
+        'Tunggu beberapa saat dan cuba semula.'
+    };
+  }
+  try {
+    return kerja();
+  } catch (e) {
+    return {
+      berjaya: false,
+      mesej: (namaOperasi ? namaOperasi + ': ' : '') +
+        e.toString()
+    };
+  } finally {
+    kunci.releaseLock();
+  }
+}
+
+// Tukar nilai tidak sah kepada nombor selamat. Nilai kosong,
+// teks rosak, Infinity dan NaN tidak boleh masuk pengiraan PAJSK.
+function nomborSah_(nilai, lalai) {
+  var n = Number(nilai);
+  return isFinite(n) ? n : (lalai || 0);
+}
+
+function revisiCacheAnggaran_() {
+  var revisi = cacheDapatkan('ANGGARAN_REVISI_V1');
+  return revisi || '1';
+}
+
+function batalCacheAnggaran_() {
+  cacheSimpan('ANGGARAN_REVISI_V1',
+    Utilities.getUuid().replace(/-/g, ''), 21600);
+}
+
 // TAHUN/TINGKATAN ADA KOKU IKUT KATEGORI (v3.0)
 // TETAPAN simpan senarai dipisah koma, cth "4,5,6".
 // Pulangkan null = semua tahun dibenarkan.
@@ -534,12 +576,24 @@ function bolehSertaiKategori(kategori, tahunMurid) {
 // manakala nilai dari browser tiba sebagai STRING.
 // Perbandingan === terus akan gagal — guna ini.
 // ============================================
+function normalisasiIC(nilai) {
+  var asal = (nilai === null || nilai === undefined) ?
+    '' : String(nilai).trim();
+  var digit = asal.replace(/\D/g, '');
+  if (digit.length < 10 || digit.length > 12) return '';
+  return digit.padStart(12, '0');
+}
+
 function samaNilai(a, b) {
   var sA = (a === null || a === undefined) ?
     '' : String(a).trim();
   var sB = (b === null || b === undefined) ?
     '' : String(b).trim();
-  return sA !== '' && sA === sB;
+  if (sA === '' || sB === '') return false;
+  if (sA === sB) return true;
+  var icA = normalisasiIC(sA);
+  var icB = normalisasiIC(sB);
+  return icA !== '' && icA === icB;
 }
 
 

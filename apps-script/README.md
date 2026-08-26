@@ -23,14 +23,21 @@ backend terus dari sini, tanpa tuan perlu menampal 27 fail satu per satu.
 |---|---|---|
 | `Kebenaran.gs` | 23 Ogos 2026 | Sepadan dengan yang dipasang |
 | `Auth.gs` | 23 Ogos 2026 | Sepadan dengan yang dipasang |
-| **`Code.gs`** | **20 Ogos 2026** | **LAPUK — lihat di bawah** |
-| Selebihnya (25 fail) | 20 Ogos 2026 | Belum berubah sejak itu |
+| **`Code.gs`** | **26 Ogos 2026** | Pembantu kestabilan/IC sepadan; struktur fail masih lapuk — lihat di bawah |
+| `Kehadiranbackend.gs` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 7 |
+| `PenilaianBackend.gs` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 7 |
+| `PAJSKBackend.gs` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 7 |
+| `Penilaian.html` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 7 |
+| Selebihnya (21 fail) | 20 Ogos 2026 | Belum berubah sejak itu |
 
 ### ⚠️ `Code.gs` lapuk
 
 Dalam projek sebenar, `doPost(e)` dan array `var API_DIBENARKAN = [...]`
 sudah **dibuang** daripada `Code.gs` pada 23 Ogos, dan digantikan oleh
-`Kebenaran.gs`. Salinan di sini masih mengandungi kedua-duanya.
+`Kebenaran.gs`. Salinan di sini masih mengandungi kedua-duanya. Bahagian
+pembantu cache, `LockService`, nombor selamat dan normalisasi IC telah
+dicerminkan pada 26 Ogos, tetapi itu tidak menjadikan keseluruhan `Code.gs`
+selamat dipulihkan.
 
 **Jangan pulihkan `Code.gs` daripada folder ini** tanpa membuang semula dua
 benda itu. Dua `doPost` dalam satu projek Apps Script memberi tingkah laku
