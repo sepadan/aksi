@@ -469,6 +469,12 @@ Pada 24 Ogos 2026:
   `pwa.js`, dan kesemua 27 aset cangkerang produksi memberi HTTP 200.
   Pemeriksaan cache mengesahkan tiada alamat Apps Script/API. Ujian tanpa
   pelayan turut membuktikan rangka cache dan halaman luar talian berfungsi.
+- Pencapaian v1.2.1 diterbitkan pada 26 Ogos 2026 melalui GitHub Pages commit
+  `526e884` dan Apps Script Version 6. Halaman serta Service Worker produksi
+  memberi HTTP 200, menggunakan aset `20260826-7`, tidak lagi mengandungi
+  `onclick` dinamik untuk pilihan murid, dan mengandungi event listener selamat.
+  Ujian regresi turut menyemak kedua-dua salinan Pencapaian, semua fail JS dan
+  semua skrip sebaris dalam `docs/` tanpa ralat sintaks.
 
 Pengesahan ini tidak membuktikan operasi baca/tulis setiap modul. Kata laluan
 tidak tersedia dan tidak patut direkod dalam repo.
@@ -666,7 +672,7 @@ tindakan dicatat sebagai isu dalam hab; yang di sini diterima secara sedar.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
-| 26 Ogos 2026 | Pencapaian v1.2.1: baiki pilihan nama berapostrof/aksara khas, selamatkan paparan dinamik dan padam, pramuat senarai murid sekali lalu tapis setempat tanpa sela 400 ms | Ujian regresi Node lulus untuk GitHub Pages dan salinan Apps Script; sintaks skrip sebaris, versi aset dan cache PWA sepadan | Sahkan pilihan nama sebenar selepas GitHub Pages dan Apps Script selesai diterbitkan |
+| 26 Ogos 2026 | Pencapaian v1.2.1: baiki pilihan nama berapostrof/aksara khas, selamatkan paparan dinamik dan padam, pramuat senarai murid sekali lalu tapis setempat tanpa sela 400 ms | Ujian regresi Node lulus; GitHub Pages commit `526e884` dan Apps Script Version 6 diterbitkan; halaman/SW produksi HTTP 200, aset/cache `20260826-7`, event listener selamat dan tiada `onclick` pilihan murid dinamik | Sahkan sekali dengan akaun guru bahawa nama sebenar berapostrof boleh dipilih; tiada rekod pencapaian dibuat semasa ujian automatik |
 | 24 Ogos 2026 | PWA v1.2.0 lengkap: ikon AKSI berasaskan logo sekolah, manifest, ikon Android/iOS, Service Worker auto-kemas kini, halaman luar talian dan versi paparan baharu | GitHub Pages run #26 berjaya; produksi 390×844 mencapai `sedia`, 27 aset HTTP 200, API/data tidak dicache, menu dan mod luar talian lulus | Sahkan rupa ikon melalui satu pemasangan sebenar pada iPhone pengguna |
 | 24 Ogos 2026 | Menu mudah alih boleh ditutup melalui `×`, kawasan luar, `Escape` atau pautan; penilaian PWA direkodkan | GitHub Pages run #24 berjaya; produksi 390×844 lulus untuk tiga cara tutup, sasaran 44×44, tiada ralat JS; CSS/JS versi `20260824-3` | Sahkan sekali pada iPhone pengguna; jika PWA diteruskan, cache aset statik sahaja |
 | 24 Ogos 2026 | Semua panggilan halaman menggunakan `AKSI.token()`; Kehadiran dan Laporan memaparkan senarai sebelum penapis dipilih; Pencapaian memuat rekod tetamu dan menghalang autofill carian | GitHub Pages run #22 berjaya; produksi tetamu: 2 rekod Pencapaian, 17 pilihan kelab pada Kehadiran/Laporan, 0 kawalan tulis; API perjumpaan yang disemak membalas `ok:true` dengan 0 rekod | Sahkan paparan yang sama selepas log masuk guru/admin menggunakan akaun sebenar pemilik |
