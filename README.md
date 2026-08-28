@@ -43,10 +43,15 @@ Antara muka pula dihidangkan sebagai fail statik dari GitHub Pages.
 halaman masih memanggil `google.script.run` seperti biasa — tiada satu pun
 panggilan perlu ditulis semula.
 
-**Versi semasa:** `AKSI v1.2.0 · PWA`. Aplikasi boleh ditambah ke homescreen
+**Versi semasa:** `AKSI v1.4.0 · PWA`. Aplikasi boleh ditambah ke homescreen
 Android/iPhone. Setiap kali dibuka, ia menyemak Service Worker baharu dan
 mengemas kini sendiri tanpa perlu dipasang semula. Cache dihadkan kepada HTML,
 CSS, JavaScript dan ikon; jawapan API, token serta data murid tidak dicache.
+
+Upload data murid atau guru oleh admin AKSI turut menyelaraskan data asas ke
+HADIR dan SEMAK. Syarat AKSI tetap berkuat kuasa: kelas layak kokurikulum,
+keahlian, kehadiran, pencapaian, PAJSK, akaun dan kata laluan tidak dikongsi.
+Rahsia relay disimpan dalam Script Properties, bukan dalam repo.
 
 **Status:** log masuk dari GitHub Pages disahkan berfungsi pada 23 Ogos 2026.
 Halaman selebihnya sudah dibina dan menunggu pengesahan operasi baca/tulis —

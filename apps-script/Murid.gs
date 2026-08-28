@@ -1,10 +1,11 @@
 // Murid.gs
 
-function importMurid(csvText, token) {
+function importMurid(csvText, token, asalSync) {
   if (!semakSesi(token))
     return { berjaya: false, mesej: 'Sesi tamat.' };
 
-  return denganKunciDokumen_('Import data murid', function() {
+  var rekodSync = [];
+  var hasilImport = denganKunciDokumen_('Import data murid', function() {
     // Buang BOM & pecah baris (sokong CRLF Windows)
     var baris = csvText.replace(/^\uFEFF/, '')
       .trim().split(/\r?\n/);
@@ -232,6 +233,12 @@ function importMurid(csvText, token) {
 
     cacheBuang('KELAS_AKTIF_V1');
     batalCacheAnggaran_();
+    rekodSync = barisData.filter(function(r) { return r[8] === 'AKTIF'; }).map(function(r) {
+      return {
+        ic: r[0], nama: r[1], tahun: r[2], namaKelas: r[3], kelas: r[4],
+        jantina: r[5], agama: r[6], kaum: r[7]
+      };
+    });
     return {
       berjaya: true,
       tambah: jumlahTambah,
@@ -240,6 +247,10 @@ function importMurid(csvText, token) {
       langkau: jumlahLangkau
     };
   });
+  if (hasilImport && hasilImport.berjaya && String(asalSync || '').toUpperCase() !== 'HADIR') {
+    hasilImport.sync = sepadanHantarKeHadir_('murid', rekodSync, 'AKSI');
+  }
+  return hasilImport;
 }
 
 function exportTemplateKoku(token) {
@@ -549,4 +560,30 @@ function pecahCSV(baris) {
   }
   hasil.push(semasa);
   return hasil;
+}
+
+function sepadanHantarKeHadir_(jenis, senarai, sumber) {
+  var props = PropertiesService.getScriptProperties();
+  var rahsia = props.getProperty('SEPADAN_SYNC_SECRET');
+  var url = props.getProperty('SEPADAN_HADIR_URL') ||
+    'https://script.google.com/macros/s/AKfycbzqppwOPHQZz7dZe9OW3Hbhf1nA5wdfqBeQUUXmOxrt1ILDezw_HsLE4wgpbKMt8hbe/exec';
+  if (!rahsia) return { ok: false, mesej: 'Rahsia penyelarasan SePadan belum ditetapkan.' };
+  try {
+    var kaedah = jenis === 'guru' ? 'terimaSyncGuru' : 'terimaSyncMurid';
+    var respons = UrlFetchApp.fetch(url, {
+      method: 'post', contentType: 'text/plain; charset=utf-8', followRedirects: true,
+      muteHttpExceptions: true,
+      payload: JSON.stringify({
+        mode: 'hadir', kaedah: kaedah,
+        argumen: [senarai || [], String(sumber || 'AKSI').toUpperCase(), rahsia]
+      })
+    });
+    var data = JSON.parse(respons.getContentText());
+    if (!data.ok) throw new Error(data.ralat || 'Relay HADIR gagal.');
+    if (!data.hasil || data.hasil.ok === false)
+      throw new Error((data.hasil && data.hasil.mesej) || 'Relay HADIR gagal.');
+    return { ok: data.hasil.syncOk !== false, mesej: data.hasil.mesej || 'Semua sistem diselaraskan.' };
+  } catch (e) {
+    return { ok: false, mesej: e && e.message ? e.message : String(e) };
+  }
 }

@@ -37,7 +37,7 @@ Keadaan semasa:
 
 | Bahagian | Status | Bukti/catatan |
 |---|---|---|
-| Kod Apps Script di GitHub | Siap dengan pengecualian diketahui | Modul berubah dalam Version 8 dicerminkan; `Code.gs` hanya sepadan bagi fungsi sasaran dan tidak boleh dipulihkan penuh |
+| Kod Apps Script di GitHub | Siap dengan pengecualian diketahui | Modul berubah dalam Version 10 dicerminkan; `Code.gs` hanya sepadan bagi fungsi sasaran dan tidak boleh dipulihkan penuh |
 | GitHub Pages `/docs` | Hidup | halaman log masuk memberi HTTP 200 |
 | API rentas-domain | Siap | `getIdentitiAwam` memberi `ok:true`; CORS `*` |
 | Log masuk berkadar terhad | Kod siap | maksimum 5 cubaan, sekat 15 minit |
@@ -46,8 +46,8 @@ Keadaan semasa:
 | Halaman baca | Diuji separa | Dashboard disahkan memaparkan data sebenar |
 | Halaman tulis | Kod siap | ujian data sebenar belum disahkan |
 | Admin dan Setup | Kod siap | ujian akaun sebenar belum disahkan |
-| PWA | Siap dan diterbitkan | v1.3.1; manifest, ikon, luar talian dan auto-kemas kini dikekalkan |
-| Import guru dari HADIR | Siap dan diterbitkan | Apps Script Version 9; merge-only, jawatan kosong/kata laluan/rekod tempatan dikekalkan |
+| PWA | Siap dan diterbitkan | v1.4.0; manifest, ikon, luar talian dan auto-kemas kini dikekalkan |
+| Sync murid/guru tiga sistem | Siap dan diterbitkan | Apps Script Version 10; upload AKSI dihantar ke relay HADIR, penanda asal mencegah gelung |
 | Pembuangan frontend lama | Belum | jangan buat sebelum semua ujian lulus |
 
 Pilihan log masuk yang telah dilaksanakan ialah mengekalkan akaun kongsi
@@ -95,6 +95,12 @@ Peraturan penting:
   hanya menggabung: guru sedia ada tidak dipadam dan jawatan hanya berubah jika
   nilai baharu tidak kosong. `pastikanAkaunGuru` kekal pembentuk akaun yang
   belum ada tanpa menukar kata laluan akaun lama.
+- Upload murid atau guru oleh admin AKSI dihantar ke relay HADIR menggunakan
+  `SEPADAN_SYNC_SECRET` dalam Script Properties. HADIR menggabungkan data dan
+  menyelaras SEMAK. Panggilan berpenanda asal `HADIR` tidak dihantar semula.
+- Hanya medan induk murid/guru diselaraskan. AKSI terus menentukan kelas layak
+  kokurikulum, status keahlian, pencapaian, kehadiran, PAJSK, akaun dan kata
+  laluan mengikut peraturan AKSI sendiri.
 
 ## 3. Fail penting
 
@@ -747,11 +753,14 @@ tindakan dicatat sebagai isu dalam hab; yang di sini diterima secara sedar.
    dalam fail ini — dan **isu dalam hab**, bukan di sini.
 10. Jika perubahan belum diterbitkan atau diuji, nyatakan dengan jelas; jangan
     menandainya siap hanya kerana kod sudah ditulis.
+11. Jangan hantar rekod domain AKSI melalui relay induk. Relay hanya untuk data
+    asas murid/guru; semua syarat kokurikulum dan kebenaran AKSI kekal wajib.
 
 ## 15. Log blueprint
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
+| 28 Ogos 2026 | AKSI v1.4.0: import murid dan guru tempatan menghantar data asas ke relay HADIR; import dari HADIR membawa penanda asal dan tidak berpusing. Rahsia dibaca daripada Script Properties; hasil UI membezakan simpanan tempatan dan status sync | Apps Script Version 10; suite kestabilan/Pencapaian dan semakan cache PWA lulus; tiada data operasi AKSI diselaraskan | Pantau import sebenar seterusnya melalui log kiraan sahaja; jangan simpan nama/IC dalam log |
 | 28 Ogos 2026 | Import guru merge-only daripada HADIR: terima objek nama/jawatan, kekalkan rekod sedia ada, jana ID `G` stabil, kemas kini jawatan tidak kosong dan tulis secara pukal; akaun/kata laluan sedia ada kekal diurus oleh `pastikanAkaunGuru` | Apps Script Version 9 pada URL sama; fail hidup sepadan dengan cerminan; suite kestabilan dan Pencapaian lulus; endpoint produksi menolak token palsu sebelum tulisan | Pengesahan tambah/upload guru sebenar dibuat apabila admin menggunakan Tetapan Guru HADIR; jangan cipta rekod ujian produksi |
 | 27 Ogos 2026 | AKSI v1.3.1: kunci menyeluruh semua laluan mutasi, import murid/keahlian atomik, ID Laporan/Pencapaian/gambar stabil, tulisan kelompok Auth/Laporan, cache anggaran dibuang selepas perubahan dan sandaran mingguan diaktifkan | Apps Script Version 8 pada URL sama; semua fail GS sah sintaks; dua suite Node lulus; endpoint produksi `ok:true` dalam 2.514 saat; pencetus `backupAutoTrigger` Ahad 2–3 pagi dan `cuciSesiLama` disahkan | Sahkan satu operasi tulis sebenar untuk halaman yang masih tersenarai dalam isu hab #14; pantau larian sandaran pertama dalam Executions |
 | 26 Ogos 2026 | AKSI v1.3.0: normalisasi IC, LockService untuk kehadiran/penilaian/PAJSK, ID perjumpaan maksimum + 1, tulisan pukal, pengawal NaN dan satu muatan kelas untuk Penilaian | Apps Script Version 7 pada URL sama; dua suite Node lulus; endpoint produksi JSON `ok:true`; commit `bcbfa08` dan GitHub Pages run #33 berjaya; produksi menggunakan cache `20260826-8` | Sahkan satu operasi tulis sebenar dengan akaun guru ketika sekolah bersedia; cold start Apps Script tidak boleh dijamin di bawah 3 saat |

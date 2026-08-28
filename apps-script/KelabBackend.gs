@@ -247,11 +247,12 @@ function tukarJenisKelab(id, jenis, token) {
  * Terima array nama atau objek {nama, jawatan}. Rekod sedia ada dikekalkan;
  * jawatan hanya dikemas kini jika nilai baharu tidak kosong.
  */
-function importGuru(senaraiNama, token) {
+function importGuru(senaraiNama, token, asalSync) {
   var sesi = semakSesi(token);
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
-  return denganKunciDokumen_('Import guru', function() {
+  var guruSync = [];
+  var hasilImport = denganKunciDokumen_('Import guru', function() {
     var sheet = SpreadsheetApp.getActiveSpreadsheet()
       .getSheetByName('GURU');
     var data = sheet.getDataRange().getValues();
@@ -271,6 +272,7 @@ function importGuru(senaraiNama, token) {
         .trim().replace(/\s+/g, ' ').toUpperCase();
       if (!nama || dilihat[nama]) { langkau++; return; }
       dilihat[nama] = true;
+      guruSync.push({ nama: nama, jawatan: jawatan });
       if (sedia[nama] !== undefined) {
         var indeks = sedia[nama] + 1;
         if (jawatan && String(data[indeks][2] || '').trim().toUpperCase() !== jawatan) {
@@ -300,4 +302,11 @@ function importGuru(senaraiNama, token) {
     return { berjaya: true, tambah: baris.length,
              kemasKini: kemasKini, langkau: langkau };
   });
+  if (hasilImport && hasilImport.berjaya) {
+    hasilImport.akaun = pastikanAkaunGuru(token);
+    if (String(asalSync || '').toUpperCase() !== 'HADIR') {
+      hasilImport.sync = sepadanHantarKeHadir_('guru', guruSync, 'AKSI');
+    }
+  }
+  return hasilImport;
 }

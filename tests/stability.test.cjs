@@ -15,6 +15,8 @@ const achievement = read('apps-script', 'Pencapaianbackend.gs');
 const membership = read('apps-script', 'KeahlianBackend.gs');
 const students = read('apps-script', 'Murid.gs');
 const clubs = read('apps-script', 'KelabBackend.gs');
+const config = read('docs', 'js', 'config.js');
+const worker = read('docs', 'service-worker.js');
 const archive = read('apps-script', 'ArkibBackend.gs');
 const auth = read('apps-script', 'Auth.gs');
 const setup = read('apps-script', 'SetupBackend.gs');
@@ -163,6 +165,10 @@ assert.match(importGuru, /setValues\(data\.slice\(1\)/,
   'Kemas kini jawatan guru mesti ditulis secara pukal');
 assert.doesNotMatch(importGuru, /clear(?:Contents)?\(|deleteRow\(/,
   'Import guru merge-only tidak boleh memadam senarai sedia ada');
+assert.match(importGuru, /asalSync[\s\S]*!== 'HADIR'/,
+  'Import guru tempatan mesti relay, tetapi import daripada HADIR tidak boleh berpusing');
+assert.match(importGuru, /pastikanAkaunGuru\(token\)/,
+  'Import guru AKSI mesti memastikan akaun baharu tersedia');
 
 const importMurid = students.match(new RegExp(
   'function importMurid\\([\\s\\S]*?(?=\\nfunction |$)'))[0];
@@ -170,6 +176,22 @@ assert.match(importMurid, /Import dihentikan sebelum data diubah/,
   'Import murid rosak mesti gagal sebelum menukar data');
 assert.match(importMurid, /normalisasiIC\(icAsal\)/,
   'Import murid mesti menormalkan IC di sempadan masuk');
+assert.match(importMurid, /sepadanHantarKeHadir_\('murid'/,
+  'Upload murid AKSI mesti dihantar kepada relay HADIR');
+assert.match(importMurid, /asalSync[\s\S]*!== 'HADIR'/,
+  'Import murid daripada HADIR tidak boleh mencetuskan gelung sync');
+assert.match(students, /getProperty\('SEPADAN_SYNC_SECRET'\)/,
+  'Rahsia relay mesti dibaca daripada Script Properties');
+assert.doesNotMatch(students, /SEPADAN_SYNC_SECRET\s*=/,
+  'Nilai rahsia relay tidak boleh disimpan dalam kod');
+assert.match(students, /kaedah: kaedah[\s\S]*argumen: \[senarai \|\| \[\], String\(sumber/,
+  'Relay AKSI mesti menghantar jenis data dan penanda sumber');
+assert.match(config, /AKSI v1\.4\.0 · PWA/,
+  'Versi paparan AKSI mesti dinaikkan');
+assert.match(worker, /aksi-shell-v1\.4\.0-20260828-10/,
+  'Cache Service Worker mesti dinaikkan bersama versi aset');
+assert.doesNotMatch(worker, /20260826-9|v1\.3\.1/,
+  'Service Worker tidak boleh menyimpan nombor aset lama');
 const importKeahlian = students.match(new RegExp(
   'function importKeahlian\\([\\s\\S]*?(?=\\nfunction |$)'))[0];
 assert.ok(importKeahlian.indexOf('sheetKeahlian.clearContents()') >
@@ -217,4 +239,4 @@ for (const [name, html] of pages) {
   }
 }
 
-console.log('Ujian kestabilan lulus: IC, kunci tulis, PAJSK dan cache kelas selamat.');
+console.log('Ujian kestabilan lulus: IC, kunci tulis, PAJSK, cache kelas dan relay SePadan selamat.');

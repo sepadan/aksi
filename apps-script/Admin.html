@@ -670,7 +670,10 @@
                 'onclick="batalUpload(\'murid\')">' +
                 'Upload Lagi</button></div>';
               tunjukToast(
-                'Import murid berjaya!', 'berjaya');
+                hasil.sync && hasil.sync.ok === false ?
+                  'Import berjaya dalam AKSI; penyelarasan sistem lain perlu diperiksa.' :
+                  'Import murid berjaya dan semua sistem diselaraskan!',
+                hasil.sync && hasil.sync.ok === false ? 'ralat' : 'berjaya');
             } else {
               div.innerHTML =
                 '<div class="hasil-box ralat">' +
@@ -1122,8 +1125,11 @@
               if (hasil.berjaya) {
                 tunjukToast(hasil.tambah +
                   ' guru ditambah, ' + hasil.langkau +
-                  ' dilangkau (sudah wujud).',
-                  'berjaya');
+                  ' dilangkau. ' +
+                  (hasil.sync && hasil.sync.ok === false ?
+                    'AKSI disimpan; penyelarasan sistem lain perlu diperiksa.' :
+                    'Semua sistem telah diselaraskan.'),
+                  hasil.sync && hasil.sync.ok === false ? 'ralat' : 'berjaya');
                 muatSenaraiGuruAdmin();
               } else {
                 tunjukToast(hasil.mesej, 'ralat');
