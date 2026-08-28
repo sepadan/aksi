@@ -22,7 +22,7 @@
 > Sumber rujukan utama untuk menyambung projek menggunakan ChatGPT, Claude,
 > Codex, atau sistem lain. Baca fail ini sepenuhnya sebelum mengubah kod.
 
-**Dikemas kini:** 27 Ogos 2026, Asia/Kuala_Lumpur
+**Dikemas kini:** 28 Ogos 2026, Asia/Kuala_Lumpur
 **Repositori rasmi:** `https://github.com/sepadan/aksi`
 **Laman produksi calon:** `https://sepadan.github.io/aksi/`
 **Sistem lama:** Google Apps Script HtmlService — masih perlu dikekalkan
@@ -47,6 +47,7 @@ Keadaan semasa:
 | Halaman tulis | Kod siap | ujian data sebenar belum disahkan |
 | Admin dan Setup | Kod siap | ujian akaun sebenar belum disahkan |
 | PWA | Siap dan diterbitkan | v1.3.1; manifest, ikon, luar talian dan auto-kemas kini dikekalkan |
+| Import guru dari HADIR | Siap dan diterbitkan | Apps Script Version 9; merge-only, jawatan kosong/kata laluan/rekod tempatan dikekalkan |
 | Pembuangan frontend lama | Belum | jangan buat sebelum semua ujian lulus |
 
 Pilihan log masuk yang telah dilaksanakan ialah mengekalkan akaun kongsi
@@ -90,6 +91,10 @@ Peraturan penting:
   `docs/js/config.js`.
 - Service Worker hanya mengendalikan permintaan GET daripada asal GitHub Pages
   sendiri. Permintaan Apps Script, token dan data sekolah tidak boleh dicache.
+- `importGuru` menerima nama atau `{nama,jawatan}` daripada HADIR. Operasi ini
+  hanya menggabung: guru sedia ada tidak dipadam dan jawatan hanya berubah jika
+  nilai baharu tidak kosong. `pastikanAkaunGuru` kekal pembentuk akaun yang
+  belum ada tanpa menukar kata laluan akaun lama.
 
 ## 3. Fail penting
 
@@ -747,6 +752,7 @@ tindakan dicatat sebagai isu dalam hab; yang di sini diterima secara sedar.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
+| 28 Ogos 2026 | Import guru merge-only daripada HADIR: terima objek nama/jawatan, kekalkan rekod sedia ada, jana ID `G` stabil, kemas kini jawatan tidak kosong dan tulis secara pukal; akaun/kata laluan sedia ada kekal diurus oleh `pastikanAkaunGuru` | Apps Script Version 9 pada URL sama; fail hidup sepadan dengan cerminan; suite kestabilan dan Pencapaian lulus; endpoint produksi menolak token palsu sebelum tulisan | Pengesahan tambah/upload guru sebenar dibuat apabila admin menggunakan Tetapan Guru HADIR; jangan cipta rekod ujian produksi |
 | 27 Ogos 2026 | AKSI v1.3.1: kunci menyeluruh semua laluan mutasi, import murid/keahlian atomik, ID Laporan/Pencapaian/gambar stabil, tulisan kelompok Auth/Laporan, cache anggaran dibuang selepas perubahan dan sandaran mingguan diaktifkan | Apps Script Version 8 pada URL sama; semua fail GS sah sintaks; dua suite Node lulus; endpoint produksi `ok:true` dalam 2.514 saat; pencetus `backupAutoTrigger` Ahad 2–3 pagi dan `cuciSesiLama` disahkan | Sahkan satu operasi tulis sebenar untuk halaman yang masih tersenarai dalam isu hab #14; pantau larian sandaran pertama dalam Executions |
 | 26 Ogos 2026 | AKSI v1.3.0: normalisasi IC, LockService untuk kehadiran/penilaian/PAJSK, ID perjumpaan maksimum + 1, tulisan pukal, pengawal NaN dan satu muatan kelas untuk Penilaian | Apps Script Version 7 pada URL sama; dua suite Node lulus; endpoint produksi JSON `ok:true`; commit `bcbfa08` dan GitHub Pages run #33 berjaya; produksi menggunakan cache `20260826-8` | Sahkan satu operasi tulis sebenar dengan akaun guru ketika sekolah bersedia; cold start Apps Script tidak boleh dijamin di bawah 3 saat |
 | 26 Ogos 2026 | Pencapaian v1.2.1: baiki pilihan nama berapostrof/aksara khas, selamatkan paparan dinamik dan padam, pramuat senarai murid sekali lalu tapis setempat tanpa sela 400 ms | Ujian regresi Node lulus; GitHub Pages commit `526e884` dan Apps Script Version 6 diterbitkan; halaman/SW produksi HTTP 200, aset/cache `20260826-7`, event listener selamat dan tiada `onclick` pilihan murid dinamik | Sahkan sekali dengan akaun guru bahawa nama sebenar berapostrof boleh dipilih; tiada rekod pencapaian dibuat semasa ujian automatik |

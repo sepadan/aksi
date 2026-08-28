@@ -28,7 +28,8 @@ backend terus dari sini, tanpa tuan perlu menampal 27 fail satu per satu.
 | `PenilaianBackend.gs` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
 | `Penilaian.html` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
 | `PAJSKBackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
-| `ArkibBackend.gs`, `KeahlianBackend.gs`, `KelabBackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
+| `ArkibBackend.gs`, `KeahlianBackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
+| `KelabBackend.gs` | 28 Ogos 2026 | Sepadan dengan Apps Script Version 9; import guru merge-only daripada HADIR |
 | `Laporanbackend.gs`, `Pencapaianbackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
 | `Murid.gs`, `SetupBackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
 | Fail lain | 20–23 Ogos 2026 | Tidak berubah dalam Version 8; status terdahulu dikekalkan |

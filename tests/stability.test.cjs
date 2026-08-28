@@ -153,6 +153,17 @@ assert.match(achievement, /normalisasiIC\(senaraiIC\[i\]\)/,
 assert.match(achievement, /var noMula =[\s\S]*Math\.max\(maks/,
   'ID pencapaian mesti berdasarkan nombor maksimum');
 
+const importGuru = clubs.match(new RegExp(
+  'function importGuru\\([\\s\\S]*?(?=\\nfunction |$)'))[0];
+assert.match(importGuru, /typeof item === 'object'/,
+  'Import guru mesti menerima objek nama dan jawatan daripada HADIR');
+assert.match(importGuru, /jawatan &&/,
+  'Jawatan kosong daripada HADIR tidak boleh menindih jawatan AKSI');
+assert.match(importGuru, /setValues\(data\.slice\(1\)/,
+  'Kemas kini jawatan guru mesti ditulis secara pukal');
+assert.doesNotMatch(importGuru, /clear(?:Contents)?\(|deleteRow\(/,
+  'Import guru merge-only tidak boleh memadam senarai sedia ada');
+
 const importMurid = students.match(new RegExp(
   'function importMurid\\([\\s\\S]*?(?=\\nfunction |$)'))[0];
 assert.match(importMurid, /Import dihentikan sebelum data diubah/,

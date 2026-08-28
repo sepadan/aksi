@@ -244,7 +244,8 @@ function tukarJenisKelab(id, jenis, token) {
 
 /**
  * IMPORT GURU PUKAL (v4.3, admin sahaja)
- * Terima array nama; langkau nama yang sudah wujud.
+ * Terima array nama atau objek {nama, jawatan}. Rekod sedia ada dikekalkan;
+ * jawatan hanya dikemas kini jika nilai baharu tidak kosong.
  */
 function importGuru(senaraiNama, token) {
   var sesi = semakSesi(token);
@@ -253,23 +254,40 @@ function importGuru(senaraiNama, token) {
   return denganKunciDokumen_('Import guru', function() {
     var sheet = SpreadsheetApp.getActiveSpreadsheet()
       .getSheetByName('GURU');
-    var sedia = {};
-    sheet.getDataRange().getValues().slice(1)
-      .forEach(function(r) {
-        if (r[1]) sedia[r[1].toString().trim()
-          .toUpperCase()] = true;
-      });
-
-    var baris = [];
-    var langkau = 0;
-    var asas = new Date().getTime();
-    (senaraiNama || []).forEach(function(nama, i) {
-      nama = String(nama).trim().toUpperCase();
-      if (!nama) return;
-      if (sedia[nama]) { langkau++; return; }
-      sedia[nama] = true;
-      baris.push(['G' + (asas + i), nama, '']);
+    var data = sheet.getDataRange().getValues();
+    var sedia = {}, maksimum = 0;
+    data.slice(1).forEach(function(r, i) {
+      var nama = String(r[1] || '').trim().toUpperCase();
+      if (nama && sedia[nama] === undefined) sedia[nama] = i;
+      var nombor = parseInt(String(r[0] || '').replace(/^G/i, ''), 10);
+      if (isFinite(nombor)) maksimum = Math.max(maksimum, nombor);
     });
+
+    var baris = [], kemasKini = 0, langkau = 0, dilihat = {};
+    (senaraiNama || []).forEach(function(item) {
+      var nama = String(item && typeof item === 'object' ? (item.nama || '') : (item || ''))
+        .trim().replace(/\s+/g, ' ').toUpperCase();
+      var jawatan = String(item && typeof item === 'object' ? (item.jawatan || '') : '')
+        .trim().replace(/\s+/g, ' ').toUpperCase();
+      if (!nama || dilihat[nama]) { langkau++; return; }
+      dilihat[nama] = true;
+      if (sedia[nama] !== undefined) {
+        var indeks = sedia[nama] + 1;
+        if (jawatan && String(data[indeks][2] || '').trim().toUpperCase() !== jawatan) {
+          data[indeks][2] = jawatan;
+          kemasKini++;
+        } else langkau++;
+        return;
+      }
+      maksimum++;
+      sedia[nama] = data.length - 1 + baris.length;
+      baris.push(['G' + maksimum, nama, jawatan]);
+    });
+
+    if (data.length > 1 && kemasKini > 0) {
+      sheet.getRange(2, 3, data.length - 1, 1)
+        .setValues(data.slice(1).map(function(r) { return [r[2] || '']; }));
+    }
 
     if (baris.length > 0) {
       sheet.getRange(sheet.getLastRow() + 1, 1,
@@ -277,8 +295,9 @@ function importGuru(senaraiNama, token) {
     }
     logAktiviti(sesi.id, 'IMPORT_GURU',
       'Tambah:' + baris.length +
+      ' KemasKini:' + kemasKini +
       ' Langkau:' + langkau);
     return { berjaya: true, tambah: baris.length,
-             langkau: langkau };
+             kemasKini: kemasKini, langkau: langkau };
   });
 }
