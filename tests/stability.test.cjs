@@ -164,7 +164,9 @@ assert.match(importGuru, /jawatan &&/,
 assert.match(importGuru, /setValues\(data\.slice\(1\)/,
   'Kemas kini jawatan guru mesti ditulis secara pukal');
 assert.doesNotMatch(importGuru, /clear(?:Contents)?\(|deleteRow\(/,
-  'Import guru merge-only tidak boleh memadam senarai sedia ada');
+  'Import/sync guru tidak boleh memadam senarai sedia ada secara fizikal');
+assert.match(importGuru, /mod === 'sync'[\s\S]*'TIDAK AKTIF'/,
+  'Sync penuh mesti menyahaktifkan guru yang tiada');
 assert.match(importGuru, /asalSync[\s\S]*!== 'HADIR'/,
   'Import guru tempatan mesti relay, tetapi import daripada HADIR tidak boleh berpusing');
 assert.match(importGuru, /pastikanAkaunGuru\(token\)/,
@@ -186,9 +188,9 @@ assert.doesNotMatch(students, /SEPADAN_SYNC_SECRET\s*=/,
   'Nilai rahsia relay tidak boleh disimpan dalam kod');
 assert.match(students, /kaedah: kaedah[\s\S]*argumen: \[senarai \|\| \[\], String\(sumber/,
   'Relay AKSI mesti menghantar jenis data dan penanda sumber');
-assert.match(config, /AKSI v1\.4\.0 · PWA/,
+assert.match(config, /AKSI v1\.5\.0 · PWA/,
   'Versi paparan AKSI mesti dinaikkan');
-assert.match(worker, /aksi-shell-v1\.4\.0-20260828-10/,
+assert.match(worker, /aksi-shell-v1\.5\.0-20260828-11/,
   'Cache Service Worker mesti dinaikkan bersama versi aset');
 assert.doesNotMatch(worker, /20260826-9|v1\.3\.1/,
   'Service Worker tidak boleh menyimpan nombor aset lama');
@@ -213,6 +215,10 @@ assert.doesNotMatch(auth.match(new RegExp(
   'function pastikanAkaunGuru\\([\\s\\S]*?(?=\\nfunction |$)'))[0],
   /appendRow/,
   'Segerak akaun guru tidak boleh menulis dalam gelung');
+assert.match(auth, /TIDAK AKTIF/,
+  'Guru tidak aktif tidak boleh muncul dalam log masuk atau penciptaan akaun baharu');
+assert.match(clubs, /function padamGuru[\s\S]*TIDAK AKTIF[\s\S]*sepadanHantarKeHadir_\('guru', guruAktif, 'AKSI', 'sync'\)/,
+  'Padam guru mesti menjadi nyahaktif dan dihantar sebagai sync penuh');
 assert.match(auth, /LockService\.getScriptLock\(\)/,
   'Log aktiviti serentak mesti mempunyai kunci khusus');
 

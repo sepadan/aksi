@@ -241,6 +241,14 @@
             satu baris), kemudian upload semula.
             Nama yang sudah wujud dilangkau automatik.
           </div>
+          <div class="form-group">
+            <label>Kaedah kemas kini</label>
+            <select id="mod-import-guru" class="form-input">
+              <option value="merge">Gabung — tambah dan kemas kini sahaja</option>
+              <option value="sync">Sync penuh — nyahaktif guru yang tiada</option>
+            </select>
+            <small>Sync penuh tidak memadam akaun, kata laluan atau sejarah.</small>
+          </div>
           <button class="btn-kecil"
                   onclick="templateGuruCSV()">
             ⬇️ Muat Turun Template CSV
@@ -1044,9 +1052,9 @@
                 '</div>' +
                 '<div class="item-kanan">' +
                 '<button class="btn-padam" ' +
-                'onclick="padamGuruAdmin(\'' +
-                g.id + '\',\'' + g.nama +
-                '\')">🗑️</button>' +
+                'onclick="padamGuruAdmin(decodeURIComponent(\'' +
+                encodeURIComponent(g.id) + '\'),decodeURIComponent(\'' + encodeURIComponent(g.nama) +
+                '\'))">Nyahaktif</button>' +
                 '</div></div>';
             }).join('');
           })
@@ -1116,6 +1124,8 @@
               'ralat');
             return;
           }
+          var mod = document.getElementById('mod-import-guru').value;
+          if (mod === 'sync' && !confirm('Sync penuh akan menjadikan senarai CSV sebagai senarai aktif. Guru yang tiada akan dinyahaktifkan, tetapi sejarah dan kata laluan kekal. Teruskan?')) return;
           if (!confirm('Import ' + senarai.length +
               ' nama guru?')) return;
           tunjukLoading(true);
@@ -1141,14 +1151,14 @@
                 'ralat');
             })
             .importGuru(senarai,
-              sessionStorage.getItem('token'));
+              sessionStorage.getItem('token'), '', mod);
         };
         reader.readAsText(fail);
         event.target.value = '';
       }
 
       function padamGuruAdmin(id, nama) {
-        if (!confirm('Padam guru ' + nama + '?'))
+        if (!confirm('Nyahaktifkan guru ' + nama + ' dalam AKSI, HADIR dan SEMAK?\n\nAkaun, kata laluan dan sejarah akan dikekalkan.'))
           return;
 
         tunjukLoading(true);
@@ -1156,7 +1166,7 @@
           .withSuccessHandler(function(hasil) {
             tunjukLoading(false);
             if (hasil.berjaya) {
-              tunjukToast('Guru dipadam.', 'berjaya');
+              tunjukToast(hasil.mesej || 'Guru dinyahaktifkan.', 'berjaya');
               muatSenaraiGuruAdmin();
             } else {
               tunjukToast(hasil.mesej, 'ralat');

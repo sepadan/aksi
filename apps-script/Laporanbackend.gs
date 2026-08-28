@@ -429,8 +429,12 @@ function getSenaraiGuru(token) {
   if (!semakSesi(token)) return null;
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('GURU');
-  var data = sheet.getDataRange().getValues().slice(1);
-  return data.map(function(r) {
+  pastikanSkemaGuru_(sheet);
+  if (sheet.getLastRow() < 2) return [];
+  var data = sheet.getRange(2, 1, Math.max(0, sheet.getLastRow() - 1), 4).getValues();
+  return data.filter(function (r) {
+    return String(r[3] || 'AKTIF').trim().toUpperCase() !== 'TIDAK AKTIF';
+  }).map(function(r) {
     return { id: r[0], nama: r[1], jawatan: r[2] };
   });
 }

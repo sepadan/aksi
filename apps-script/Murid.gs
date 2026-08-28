@@ -562,7 +562,7 @@ function pecahCSV(baris) {
   return hasil;
 }
 
-function sepadanHantarKeHadir_(jenis, senarai, sumber) {
+function sepadanHantarKeHadir_(jenis, senarai, sumber, mod) {
   var props = PropertiesService.getScriptProperties();
   var rahsia = props.getProperty('SEPADAN_SYNC_SECRET');
   var url = props.getProperty('SEPADAN_HADIR_URL') ||
@@ -575,7 +575,8 @@ function sepadanHantarKeHadir_(jenis, senarai, sumber) {
       muteHttpExceptions: true,
       payload: JSON.stringify({
         mode: 'hadir', kaedah: kaedah,
-        argumen: [senarai || [], String(sumber || 'AKSI').toUpperCase(), rahsia]
+        argumen: [senarai || [], String(sumber || 'AKSI').toUpperCase(), rahsia,
+          String(mod || 'merge').toLowerCase()]
       })
     });
     var data = JSON.parse(respons.getContentText());

@@ -1,5 +1,5 @@
-// AKSI v1.4.0 · PWA — cache rangka statik sahaja, bukan data murid/API.
-const CACHE_VERSION = 'aksi-shell-v1.4.0-20260828-10';
+// AKSI v1.5.0 · PWA — cache rangka statik sahaja, bukan data murid/API.
+const CACHE_VERSION = 'aksi-shell-v1.5.0-20260828-11';
 const OFFLINE_URL = './offline.html';
 const APP_SHELL = [
   './',
@@ -15,21 +15,21 @@ const APP_SHELL = [
   './setup.html',
   OFFLINE_URL,
   './manifest.webmanifest',
-  './manifest.webmanifest?v=1.4.0',
-  './css/style.css?v=20260828-10',
-  './js/config.js?v=20260828-10',
-  './js/api.js?v=20260828-10',
-  './js/app.js?v=20260828-10',
-  './js/pwa.js?v=20260828-10',
+  './manifest.webmanifest?v=1.5.0',
+  './css/style.css?v=20260828-11',
+  './js/config.js?v=20260828-11',
+  './js/api.js?v=20260828-11',
+  './js/app.js?v=20260828-11',
+  './js/pwa.js?v=20260828-11',
   './icons/aksi-192.png',
   './icons/aksi-512.png',
   './icons/aksi-maskable-512.png',
   './icons/apple-touch-icon.png',
-  './icons/apple-touch-icon.png?v=1.4.0',
+  './icons/apple-touch-icon.png?v=1.5.0',
   './icons/favicon-32.png',
-  './icons/favicon-32.png?v=1.4.0',
+  './icons/favicon-32.png?v=1.5.0',
   './icons/favicon-48.png',
-  './icons/favicon-48.png?v=1.4.0'
+  './icons/favicon-48.png?v=1.5.0'
 ];
 
 self.addEventListener('install', function (event) {

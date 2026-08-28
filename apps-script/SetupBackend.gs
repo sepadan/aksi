@@ -105,7 +105,7 @@ function buatSemuaSheet() {
     },
     {
       nama: 'GURU',
-      header: ['ID_GURU', 'NAMA_GURU', 'JAWATAN']
+      header: ['ID_GURU', 'NAMA_GURU', 'JAWATAN', 'STATUS']
     },
     {
       nama: 'PENGGUNA',

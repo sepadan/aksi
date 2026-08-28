@@ -43,7 +43,7 @@ Antara muka pula dihidangkan sebagai fail statik dari GitHub Pages.
 halaman masih memanggil `google.script.run` seperti biasa — tiada satu pun
 panggilan perlu ditulis semula.
 
-**Versi semasa:** `AKSI v1.4.0 · PWA`. Aplikasi boleh ditambah ke homescreen
+**Versi semasa:** `AKSI v1.5.0 · PWA`. Aplikasi boleh ditambah ke homescreen
 Android/iPhone. Setiap kali dibuka, ia menyemak Service Worker baharu dan
 mengemas kini sendiri tanpa perlu dipasang semula. Cache dihadkan kepada HTML,
 CSS, JavaScript dan ikon; jawapan API, token serta data murid tidak dicache.
@@ -52,6 +52,10 @@ Upload data murid atau guru oleh admin AKSI turut menyelaraskan data asas ke
 HADIR dan SEMAK. Syarat AKSI tetap berkuat kuasa: kelas layak kokurikulum,
 keahlian, kehadiran, pencapaian, PAJSK, akaun dan kata laluan tidak dikongsi.
 Rahsia relay disimpan dalam Script Properties, bukan dalam repo.
+
+Tambah/edit guru menggunakan mod gabung. Nyahaktif atau sync penuh menyamakan
+senarai aktif di ketiga-tiga sistem; rekod guru yang tiada ditanda
+`TIDAK AKTIF`, bukan dipadam, supaya akaun, tugasan dan sejarah kekal.
 
 **Status:** log masuk dari GitHub Pages disahkan berfungsi pada 23 Ogos 2026.
 Halaman selebihnya sudah dibina dan menunggu pengesahan operasi baca/tulis —
@@ -78,7 +82,7 @@ lihat senarai semak dalam `PELAN-MIGRASI.md`.
 | `KOMITMEN_DETAIL` | IC, ID_KELAB, TAHUN_AKADEMIK, ASPEK_KOMITMEN, MARKAH |
 | `EKSTRA_KURIKULUM` | IC, TAHUN_AKADEMIK, JENIS_EKSTRA, PERKARA, PERINGKAT, MARKAH |
 | `PAJSK_SUMMARY` | IC, TAHUN, MARKAH_KP, MARKAH_PBB, MARKAH_SP, EKSTRA, GPA, CGPA, MARKAH_10_PERATUS, GRED |
-| `GURU` | ID_GURU, NAMA_GURU, JAWATAN |
+| `GURU` | ID_GURU, NAMA_GURU, JAWATAN, STATUS |
 | `PENGGUNA` | ID_PENGGUNA, PERANAN, PASSWORD_HASH |
 | `LOG_AKTIVITI` | TARIKH_MASA, PENGGUNA, TINDAKAN, BUTIRAN |
 

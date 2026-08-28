@@ -22,17 +22,17 @@ backend terus dari sini, tanpa tuan perlu menampal 27 fail satu per satu.
 | Fail | Tarikh | Keadaan |
 |---|---|---|
 | `Kebenaran.gs` | 23 Ogos 2026 | Sepadan dengan yang dipasang |
-| `Auth.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
-| **`Code.gs`** | **28 Ogos 2026** | Fungsi tetapan/logo, pembantu kestabilan/IC dan versi v1.4.0 sepadan; struktur fail masih lapuk — lihat di bawah |
+| `Auth.gs` | 29 Ogos 2026 | Sepadan dengan Apps Script Version 11; login/senarai akaun hanya guru aktif |
+| **`Code.gs`** | **29 Ogos 2026** | Fungsi tetapan/logo, pembantu kestabilan/IC dan versi v1.5.0 sepadan; struktur fail masih lapuk — lihat di bawah |
 | `Kehadiranbackend.gs` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
 | `PenilaianBackend.gs` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
 | `Penilaian.html` | 26 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
 | `PAJSKBackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
 | `ArkibBackend.gs`, `KeahlianBackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
-| `KelabBackend.gs` | 28 Ogos 2026 | Sepadan dengan Apps Script Version 10; import guru merge-only + relay upload tempatan |
-| `Laporanbackend.gs`, `Pencapaianbackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
-| `Murid.gs` | 28 Ogos 2026 | Sepadan dengan Apps Script Version 10; import tempatan relay ke HADIR tanpa gelung |
-| `SetupBackend.gs` | 27 Ogos 2026 | Sepadan dengan Apps Script Version 8 |
+| `KelabBackend.gs` | 29 Ogos 2026 | Sepadan dengan Apps Script Version 11; merge/sync/status guru + relay nyahaktif |
+| `Laporanbackend.gs`, `Pencapaianbackend.gs` | 29 Ogos 2026 | Laporan hanya menyenaraikan guru aktif; Pencapaian tidak berubah dalam Version 11 |
+| `Murid.gs` | 29 Ogos 2026 | Sepadan dengan Apps Script Version 11; relay membawa mod guru tanpa gelung |
+| `SetupBackend.gs` | 29 Ogos 2026 | Sepadan dengan Apps Script Version 11; skema `GURU` mempunyai STATUS |
 | Fail lain | 20–23 Ogos 2026 | Tidak berubah dalam Version 8; status terdahulu dikekalkan |
 
 ### ⚠️ `Code.gs` lapuk

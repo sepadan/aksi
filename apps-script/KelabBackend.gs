@@ -125,16 +125,40 @@ function tambahGuru(nama, jawatan, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  return denganKunciDokumen_('Tambah guru', function() {
+  var guruSync = [];
+  var hasilTambah = denganKunciDokumen_('Tambah guru', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('GURU');
-    var idBaru = 'G' + new Date().getTime();
-    sheet.appendRow([idBaru, nama.trim(),
-      jawatan || '']);
+    pastikanSkemaGuru_(sheet);
+    nama = String(nama || '').trim().replace(/\s+/g, ' ').toUpperCase();
+    jawatan = String(jawatan || '').trim().replace(/\s+/g, ' ').toUpperCase();
+    if (!nama) return { berjaya: false, mesej: 'Nama guru diperlukan.' };
+    var data = sheet.getLastRow() > 1 ? sheet.getRange(2, 1, sheet.getLastRow() - 1, 4).getValues() : [];
+    var baris = -1, maksimum = 0;
+    data.forEach(function (r, i) {
+      if (String(r[1] || '').trim().toUpperCase() === nama) baris = i;
+      var n = parseInt(String(r[0] || '').replace(/^G/i, ''), 10);
+      if (isFinite(n)) maksimum = Math.max(maksimum, n);
+    });
+    var idBaru;
+    if (baris >= 0) {
+      idBaru = data[baris][0];
+      if (jawatan) data[baris][2] = jawatan;
+      data[baris][3] = 'AKTIF';
+      sheet.getRange(2, 1, data.length, 4).setValues(data);
+    } else {
+      idBaru = 'G' + (maksimum + 1);
+      sheet.getRange(sheet.getLastRow() + 1, 1, 1, 4)
+        .setValues([[idBaru, nama, jawatan, 'AKTIF']]);
+    }
+    guruSync = [{ nama: nama, jawatan: jawatan }];
     logAktiviti(sesi.id, 'TAMBAH_GURU',
-      'Guru: ' + nama);
+      'ID: ' + idBaru);
     return { berjaya: true, id: idBaru };
   });
+  if (hasilTambah && hasilTambah.berjaya)
+    hasilTambah.sync = sepadanHantarKeHadir_('guru', guruSync, 'AKSI', 'merge');
+  return hasilTambah;
 }
 
 function padamGuru(id, token) {
@@ -142,17 +166,23 @@ function padamGuru(id, token) {
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
 
-  return denganKunciDokumen_('Padam guru', function() {
+  var guruAktif = [];
+  var hasilPadam = denganKunciDokumen_('Nyahaktif guru', function() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('GURU');
-    var rekod = sheet.getDataRange().getValues();
+    pastikanSkemaGuru_(sheet);
+    var rekod = sheet.getRange(1, 1, sheet.getLastRow(), 4).getValues();
 
     for (var i = 1; i < rekod.length; i++) {
       if (rekod[i][0] === id) {
-        sheet.deleteRow(i + 1);
-        logAktiviti(sesi.id, 'PADAM_GURU',
+        rekod[i][3] = 'TIDAK AKTIF';
+        if (rekod.length > 1) sheet.getRange(2, 1, rekod.length - 1, 4).setValues(rekod.slice(1));
+        guruAktif = rekod.slice(1).filter(function (r) {
+          return String(r[3] || 'AKTIF').trim().toUpperCase() !== 'TIDAK AKTIF';
+        }).map(function (r) { return { nama: r[1], jawatan: r[2] }; });
+        logAktiviti(sesi.id, 'NYAHAKTIF_GURU',
           'ID: ' + id);
-        return { berjaya: true };
+        return { berjaya: true, mesej: 'Guru dinyahaktifkan; akaun dan sejarah dikekalkan.' };
       }
     }
     return {
@@ -160,6 +190,18 @@ function padamGuru(id, token) {
       mesej: 'Guru tidak dijumpai.'
     };
   });
+  if (hasilPadam && hasilPadam.berjaya)
+    hasilPadam.sync = sepadanHantarKeHadir_('guru', guruAktif, 'AKSI', 'sync');
+  return hasilPadam;
+}
+
+function pastikanSkemaGuru_(sheet) {
+  if (!sheet) throw new Error('Tab GURU tidak ditemui.');
+  if (sheet.getMaxColumns() < 4) sheet.insertColumnsAfter(sheet.getMaxColumns(), 4 - sheet.getMaxColumns());
+  if (!sheet.getRange(1, 4).getValue()) {
+    sheet.getRange(1, 4).setValue('STATUS');
+    if (sheet.getLastRow() > 1) sheet.getRange(2, 4, sheet.getLastRow() - 1, 1).setValue('AKTIF');
+  }
 }
 
 /**
@@ -247,19 +289,21 @@ function tukarJenisKelab(id, jenis, token) {
  * Terima array nama atau objek {nama, jawatan}. Rekod sedia ada dikekalkan;
  * jawatan hanya dikemas kini jika nilai baharu tidak kosong.
  */
-function importGuru(senaraiNama, token, asalSync) {
+function importGuru(senaraiNama, token, asalSync, mod) {
   var sesi = semakSesi(token);
   if (!sesi || sesi.peranan !== 'admin')
     return { berjaya: false, mesej: 'Akses ditolak.' };
+  mod = String(mod || 'merge').toLowerCase() === 'sync' ? 'sync' : 'merge';
   var guruSync = [];
   var hasilImport = denganKunciDokumen_('Import guru', function() {
     var sheet = SpreadsheetApp.getActiveSpreadsheet()
       .getSheetByName('GURU');
-    var data = sheet.getDataRange().getValues();
+    pastikanSkemaGuru_(sheet);
+    var data = sheet.getRange(1, 1, sheet.getLastRow(), 4).getValues();
     var sedia = {}, maksimum = 0;
     data.slice(1).forEach(function(r, i) {
       var nama = String(r[1] || '').trim().toUpperCase();
-      if (nama && sedia[nama] === undefined) sedia[nama] = i;
+      if (nama && sedia[nama] === undefined) sedia[nama] = i + 1;
       var nombor = parseInt(String(r[0] || '').replace(/^G/i, ''), 10);
       if (isFinite(nombor)) maksimum = Math.max(maksimum, nombor);
     });
@@ -274,38 +318,47 @@ function importGuru(senaraiNama, token, asalSync) {
       dilihat[nama] = true;
       guruSync.push({ nama: nama, jawatan: jawatan });
       if (sedia[nama] !== undefined) {
-        var indeks = sedia[nama] + 1;
+        var indeks = sedia[nama];
         if (jawatan && String(data[indeks][2] || '').trim().toUpperCase() !== jawatan) {
           data[indeks][2] = jawatan;
           kemasKini++;
-        } else langkau++;
+        }
+        if (String(data[indeks][3] || 'AKTIF').trim().toUpperCase() === 'TIDAK AKTIF') {
+          data[indeks][3] = 'AKTIF';
+          kemasKini++;
+        } else if (!jawatan || String(data[indeks][2] || '').trim().toUpperCase() === jawatan) langkau++;
         return;
       }
       maksimum++;
       sedia[nama] = data.length - 1 + baris.length;
-      baris.push(['G' + maksimum, nama, jawatan]);
+      baris.push(['G' + maksimum, nama, jawatan, 'AKTIF']);
     });
-
-    if (data.length > 1 && kemasKini > 0) {
-      sheet.getRange(2, 3, data.length - 1, 1)
-        .setValues(data.slice(1).map(function(r) { return [r[2] || '']; }));
+    var nyahaktif = 0;
+    if (mod === 'sync') {
+      data.slice(1).forEach(function (r) {
+        var nama = String(r[1] || '').trim().toUpperCase();
+        if (nama && !dilihat[nama] && String(r[3] || 'AKTIF').trim().toUpperCase() !== 'TIDAK AKTIF') {
+          r[3] = 'TIDAK AKTIF';
+          nyahaktif++;
+        }
+      });
     }
-
+    if (data.length > 1) sheet.getRange(2, 1, data.length - 1, 4).setValues(data.slice(1));
     if (baris.length > 0) {
       sheet.getRange(sheet.getLastRow() + 1, 1,
-        baris.length, 3).setValues(baris);
+        baris.length, 4).setValues(baris);
     }
     logAktiviti(sesi.id, 'IMPORT_GURU',
       'Tambah:' + baris.length +
       ' KemasKini:' + kemasKini +
-      ' Langkau:' + langkau);
+      ' Nyahaktif:' + nyahaktif + ' Langkau:' + langkau);
     return { berjaya: true, tambah: baris.length,
-             kemasKini: kemasKini, langkau: langkau };
+             kemasKini: kemasKini, nyahaktif: nyahaktif, langkau: langkau };
   });
   if (hasilImport && hasilImport.berjaya) {
     hasilImport.akaun = pastikanAkaunGuru(token);
     if (String(asalSync || '').toUpperCase() !== 'HADIR') {
-      hasilImport.sync = sepadanHantarKeHadir_('guru', guruSync, 'AKSI');
+      hasilImport.sync = sepadanHantarKeHadir_('guru', guruSync, 'AKSI', mod);
     }
   }
   return hasilImport;

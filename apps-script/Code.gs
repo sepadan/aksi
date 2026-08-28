@@ -386,7 +386,7 @@ function tukarPassword(id, passwordBaru) {
 //   <?!= renderSidebar(token, peranan) ?>
 // ============================================
 
-var VERSI_SISTEM = 'AKSI v1.4.0';
+var VERSI_SISTEM = 'AKSI v1.5.0';
 
 function renderSidebar(token, peranan) {
   var url = ScriptApp.getService().getUrl();

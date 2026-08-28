@@ -84,10 +84,12 @@ function namaGuruSemua_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('GURU');
   if (!sheet || sheet.getLastRow() < 2) return [];
-  var data = sheet.getDataRange().getValues();
+  pastikanSkemaGuru_(sheet);
+  var data = sheet.getRange(1, 1, sheet.getLastRow(), 4).getValues();
   var nampak = {}, keluar = [];
   for (var i = 1; i < data.length; i++) {
-    var nama = String(data[i][1] || '').trim();   // ID_GURU, NAMA_GURU, JAWATAN
+    if (String(data[i][3] || 'AKTIF').trim().toUpperCase() === 'TIDAK AKTIF') continue;
+    var nama = String(data[i][1] || '').trim();   // ID_GURU, NAMA_GURU, JAWATAN, STATUS
     if (!nama) continue;
     var kunci = nama.toUpperCase();
     if (nampak[kunci]) continue;
