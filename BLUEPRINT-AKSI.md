@@ -22,7 +22,7 @@
 > Sumber rujukan utama untuk menyambung projek menggunakan ChatGPT, Claude,
 > Codex, atau sistem lain. Baca fail ini sepenuhnya sebelum mengubah kod.
 
-**Dikemas kini:** 29 Ogos 2026, Asia/Kuala_Lumpur
+**Dikemas kini:** 30 Ogos 2026, Asia/Kuala_Lumpur
 **Repositori rasmi:** `https://github.com/sepadan/aksi`
 **Laman produksi calon:** `https://sepadan.github.io/aksi/`
 **Sistem lama:** Google Apps Script HtmlService — masih perlu dikekalkan
@@ -762,6 +762,7 @@ tindakan dicatat sebagai isu dalam hab; yang di sini diterima secara sedar.
 
 | Tarikh | Perubahan | Pengesahan | Seterusnya |
 |---|---|---|---|
+| 30 Ogos 2026 | Audit kestabilan repo: `login()` dan setiap semakan sesi kini menolak serta membatalkan token guru berstatus `TIDAK AKTIF`; paparan Laporan, Keahlian, Penilaian dan Admin melolos semua teks dinamik sebelum `innerHTML`, termasuk paparan semakan/ralat Keahlian; semua argumen pengendali sebaris mengekod apostrof. Cache aset PWA dinaikkan ke `20260830-12` supaya pemasangan lama tidak memuat helper JavaScript lapuk | Dua suite Node lulus, semua skrip sebaris kekal sah, ujian regresi meliputi kedua-dua salinan GitHub Pages/Apps Script, dan semakan bebas susulan mengesahkan isu XSS/pariti telah ditutup; tiada data sekolah disentuh | Terbitkan perubahan Apps Script dan GitHub Pages selepas semakan branch; deployment produksi masih Version 11 |
 | 29 Ogos 2026 | AKSI v1.5.0: skema `GURU` mendapat `STATUS`; tambah/edit mengaktifkan dan relay `merge`, manakala Padam kini nyahaktif serta relay snapshot aktif `sync`. Import penuh menyahaktifkan guru yang tiada tanpa membuang baris, akaun, kata laluan, tugasan atau sejarah. Senarai login/laporan hanya memaparkan guru aktif; CSV admin memberi pratonton dan pengesahan mod | Apps Script Version 11 diterbitkan pada URL sama; suite kestabilan/Pencapaian lulus; cache PWA dinaikkan serentak; tiada guru produksi diubah semasa ujian teknikal | Pantau operasi admin sebenar pertama melalui status sync; pemulihan guru dibuat dengan tambah/import nama yang sama |
 | 28 Ogos 2026 | AKSI v1.4.0: import murid dan guru tempatan menghantar data asas ke relay HADIR; import dari HADIR membawa penanda asal dan tidak berpusing. Rahsia dibaca daripada Script Properties; hasil UI membezakan simpanan tempatan dan status sync | Apps Script Version 10; suite kestabilan/Pencapaian dan semakan cache PWA lulus; tiada data operasi AKSI diselaraskan | Pantau import sebenar seterusnya melalui log kiraan sahaja; jangan simpan nama/IC dalam log |
 | 28 Ogos 2026 | Import guru merge-only daripada HADIR: terima objek nama/jawatan, kekalkan rekod sedia ada, jana ID `G` stabil, kemas kini jawatan tidak kosong dan tulis secara pukal; akaun/kata laluan sedia ada kekal diurus oleh `pastikanAkaunGuru` | Apps Script Version 9 pada URL sama; fail hidup sepadan dengan cerminan; suite kestabilan dan Pencapaian lulus; endpoint produksi menolak token palsu sebelum tulisan | Pengesahan tambah/upload guru sebenar dibuat apabila admin menggunakan Tetapan Guru HADIR; jangan cipta rekod ujian produksi |

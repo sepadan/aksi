@@ -279,7 +279,7 @@
           guruLaporan.map((n, i) => `
             <span class="badge" style="display:inline-flex;
                   align-items:center; gap:6px">
-              ${n}
+              ${esc(n)}
               <a style="cursor:pointer; font-weight:bold"
                  onclick="buangGuruLaporan(${i})">✕</a>
             </span>
@@ -502,25 +502,25 @@
                     .innerHTML = `
               <div class="laporan-item">
                 <span class="label">Tajuk</span>
-                <span>${laporan.tajuk}</span>
+                <span>${esc(laporan.tajuk)}</span>
               </div>
               <div class="laporan-item">
                 <span class="label">Aktiviti</span>
-                <span>${laporan.aktiviti}</span>
+                <span>${esc(laporan.aktiviti)}</span>
               </div>
               <div class="laporan-item">
                 <span class="label">Guru Penasihat</span>
-                <span>${laporan.namaGuru}</span>
+                <span>${esc(laporan.namaGuru)}</span>
               </div>
               <div class="laporan-item">
                 <span class="label">Tarikh Dihantar</span>
-                <span>${laporan.tarikhHantar}</span>
+                <span>${esc(laporan.tarikhHantar)}</span>
               </div>
               ${(laporan.gambar && laporan.gambar.length) ? `
               <div class="laporan-item">
                 <span class="label">Gambar (${laporan.gambar.length})</span>
                 <span>${laporan.gambar.map(g =>
-                  `<a href="${g.url}" target="_blank">📷 ${g.nama}</a>`
+                  `<a href="${esc(g.url)}" target="_blank" rel="noopener">📷 ${esc(g.nama)}</a>`
                 ).join('<br>')}</span>
               </div>` : ''}
             `;
@@ -586,8 +586,8 @@
                  style="${dibuang ?
                    'opacity:0.35;filter:grayscale(1)' : ''}">
               <img src="${thumbnailDrive(g.url)}"
-                   alt="${g.nama}">
-              <span>${g.nama}</span>
+                   alt="${esc(g.nama)}">
+              <span>${esc(g.nama)}</span>
               <button type="button" class="btn-kecil"
                       style="margin-top:4px"
                       onclick="togolBuangGambar('${g.id}')">

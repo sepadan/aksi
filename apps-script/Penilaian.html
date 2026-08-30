@@ -320,13 +320,13 @@
         kad.style.display = 'block';
 
         document.getElementById('profil-murid').innerHTML =
-          '<strong style="font-size:16px">' + a.nama +
+          '<strong style="font-size:16px">' + esc(a.nama) +
           '</strong><br>' +
-          '<span class="masa-text">' + a.kelas +
-          ' · IC ' + a.ic +
+          '<span class="masa-text">' + esc(a.kelas) +
+          ' · IC ' + esc(a.ic) +
           (a.rumahSukan ?
-            ' · Rumah Sukan: ' + a.rumahSukan : '') +
-          ' · TA ' + a.tahunAkademik + '</span>';
+            ' · Rumah Sukan: ' + esc(a.rumahSukan) : '') +
+          ' · TA ' + esc(a.tahunAkademik) + '</span>';
 
         let html = '';
         if (a.kelab.length === 0) {
@@ -338,12 +338,12 @@
           html +=
             '<div style="border-top:1px solid #f0f0f0;' +
             ' margin-top:14px; padding-top:12px">' +
-            '<strong>' + k.nama + '</strong> ' +
-            '<span class="badge">' + k.kategori +
+            '<strong>' + esc(k.nama) + '</strong> ' +
+            '<span class="badge">' + esc(k.kategori) +
             '</span>' +
             (k.jawatanKeahlian ?
               ' <span class="masa-text">' +
-              k.jawatanKeahlian + '</span>' : '') +
+              esc(k.jawatanKeahlian) + '</span>' : '') +
             '<table class="jadual-anggaran"' +
             ' style="margin-top:8px">' +
             '<tr><td>Kehadiran</td><td>' + k.hadir + '/' +
@@ -353,11 +353,11 @@
             k.pencapaian + '</b>/20' +
             (k.senaraiPencapaian.length ?
               '<br><span class="masa-text">' +
-              k.senaraiPencapaian.map(p => p.nama +
-                ' (' + p.tempat + ' ' + p.peringkat +
+              k.senaraiPencapaian.map(p => esc(p.nama) +
+                ' (' + esc(p.tempat) + ' ' + esc(p.peringkat) +
                 ')').join('; ') + '</span>' : '') +
             '</td></tr>' +
-            '<tr><td>Jawatan</td><td><b>' + k.jawatan +
+            '<tr><td>Jawatan</td><td><b>' + esc(k.jawatan || '') +
             '</b>/10' + labelSumber(k.sumberJawatan) +
             '</td></tr>' +
             '<tr><td>Penglibatan</td><td><b>' +
@@ -556,9 +556,10 @@
 
         data.forEach(function(a, i) {
           html += '<tr class="baris-klik"' +
-            ' onclick="bukaMurid(\'' + a.ic + '\')">' +
+            ' onclick="bukaMurid(decodeURIComponent(\'' +
+            kodArgumenURI_(a.ic) + '\'))">' +
             '<td>' + (i + 1) + '</td>' +
-            '<td style="text-align:left">' + a.nama +
+            '<td style="text-align:left">' + esc(a.nama) +
             '</td>' +
             '<td>' + a.kelab.length + '</td>' +
             (t4 ? '<td><b>' + nomborPaparan_(a.gpa).toFixed(2) +

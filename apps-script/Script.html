@@ -72,6 +72,22 @@
 // KEMASKINI: pergiHalaman/pergiLogin tunjuk loading
 // overlay & ada failure handler.
 
+function esc(t) {
+  return String(t === null || t === undefined ? '' : t)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escAtr(t) {
+  return esc(t);
+}
+
+function kodArgumenURI_(t) {
+  return encodeURIComponent(String(t === null || t === undefined ? '' : t))
+    .replace(/'/g, '%27');
+}
+
 function semakSesiAktif() {
   var token = sessionStorage.getItem('token');
   if (!token) {

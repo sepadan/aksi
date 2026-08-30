@@ -16,6 +16,8 @@ const membership = read('apps-script', 'KeahlianBackend.gs');
 const students = read('apps-script', 'Murid.gs');
 const clubs = read('apps-script', 'KelabBackend.gs');
 const config = read('docs', 'js', 'config.js');
+const appJs = read('docs', 'js', 'app.js');
+const sharedScript = read('apps-script', 'Script.html');
 const worker = read('docs', 'service-worker.js');
 const archive = read('apps-script', 'ArkibBackend.gs');
 const auth = read('apps-script', 'Auth.gs');
@@ -24,6 +26,22 @@ const pages = [
   ['GitHub Pages', read('docs', 'penilaian.html')],
   ['Apps Script', read('apps-script', 'Penilaian.html')]
 ];
+const authPages = [
+  ['GitHub Laporan', read('docs', 'laporan.html')],
+  ['Apps Script Laporan', read('apps-script', 'Laporan.html')],
+  ['GitHub Keahlian', read('docs', 'keahlian.html')],
+  ['Apps Script Keahlian', read('apps-script', 'Keahlian.html')],
+  ['GitHub Penilaian', read('docs', 'penilaian.html')],
+  ['Apps Script Penilaian', read('apps-script', 'Penilaian.html')],
+  ['GitHub Admin', read('docs', 'admin.html')],
+  ['Apps Script Admin', read('apps-script', 'Admin.html')]
+];
+assert.match(appJs, /function kodArgumenURI_[\s\S]*replace\(\/\'\/g,\s*'%27'\)/,
+  'GitHub Pages mesti mengekod apostrof dalam argumen inline');
+assert.match(sharedScript, /function kodArgumenURI_[\s\S]*replace\(\/\'\/g,\s*'%27'\)/,
+  'Apps Script mesti mengekod apostrof dalam argumen inline');
+assert.match(sharedScript, /function escAtr\(t\)/,
+  'HtmlService mesti menyediakan pelolos atribut yang digunakan halaman Keahlian');
 
 for (const [name, source] of [
   ['Code.gs', code],
@@ -190,7 +208,7 @@ assert.match(students, /kaedah: kaedah[\s\S]*argumen: \[senarai \|\| \[\], Strin
   'Relay AKSI mesti menghantar jenis data dan penanda sumber');
 assert.match(config, /AKSI v1\.5\.0 · PWA/,
   'Versi paparan AKSI mesti dinaikkan');
-assert.match(worker, /aksi-shell-v1\.5\.0-20260828-11/,
+assert.match(worker, /aksi-shell-v1\.5\.0-20260830-12/,
   'Cache Service Worker mesti dinaikkan bersama versi aset');
 assert.doesNotMatch(worker, /20260826-9|v1\.3\.1/,
   'Service Worker tidak boleh menyimpan nombor aset lama');
@@ -217,6 +235,15 @@ assert.doesNotMatch(auth.match(new RegExp(
   'Segerak akaun guru tidak boleh menulis dalam gelung');
 assert.match(auth, /TIDAK AKTIF/,
   'Guru tidak aktif tidak boleh muncul dalam log masuk atau penciptaan akaun baharu');
+assert.match(auth, /function guruAktif_\(nama\)/,
+  'Semakan status guru aktif mesti berpusat');
+const loginBlock = auth.match(/function login\([\s\S]*?(?=\nfunction |$)/)[0];
+assert.match(loginBlock, /peranan === 'guru'[\s\S]*guruAktif_\(idPengguna\)/,
+  'Login terus mesti menolak akaun guru yang telah dinyahaktifkan');
+const sessionBlock = auth.match(/function semakSesi\([\s\S]*?(?=\nfunction |$)/)[0];
+assert.match(sessionBlock,
+  /sesi\.peranan === 'guru'[\s\S]*guruAktif_\(sesi\.id\)[\s\S]*deleteProperty\('SESI_' \+ token\)/,
+  'Sesi guru mesti dibatalkan segera apabila guru dinyahaktifkan');
 assert.match(clubs, /function padamGuru[\s\S]*TIDAK AKTIF[\s\S]*sepadanHantarKeHadir_\('guru', guruAktif, 'AKSI', 'sync'\)/,
   'Padam guru mesti menjadi nyahaktif dan dihantar sebagai sync penuh');
 assert.match(auth, /LockService\.getScriptLock\(\)/,
@@ -243,6 +270,50 @@ for (const [name, html] of pages) {
     assert.doesNotThrow(() => new Function(source),
       `${name}: JavaScript sebaris mesti sah`);
   }
+}
+
+for (const [name, html] of authPages) {
+  assert.doesNotMatch(html, /<strong>' \+ (?:m\.nama|a\.nama|g\.nama) \+/,
+    `${name}: nama dinamik tidak boleh dimasukkan mentah ke innerHTML`);
+  assert.doesNotMatch(html, /📍 ' \+ p\.tempat \+/,
+    `${name}: tempat perjumpaan tidak boleh dimasukkan mentah ke innerHTML`);
+  assert.doesNotMatch(html,
+    /(?:' \+ (?:a\.(?:nama|kelas|rumahSukan)|k\.(?:nama|jawatanKeahlian)|p\.(?:nama|peringkat)) \+|\$\{laporan\.(?:tajuk|aktiviti|namaGuru)\})/,
+    `${name}: teks rekod mesti melalui esc sebelum dimasukkan ke innerHTML`);
+  assert.doesNotMatch(html, /encodeURIComponent\((?:a|g)\.(?:ic|id|nama)\)/,
+    `${name}: encodeURIComponent biasa tidak mengekod apostrof untuk atribut onclick`);
+  assert.doesNotMatch(html, /tambahAhli\(\\''\s*\+\s*m\.ic/,
+    `${name}: IC murid tidak boleh dimasukkan mentah ke onclick tambahAhli`);
+  assert.doesNotMatch(html, /(?:tukarJawatan|bukaMurid)\(\\''\s*\+\s*a\.ic/,
+    `${name}: IC ahli tidak boleh dimasukkan mentah ke pengendali sebaris`);
+  assert.doesNotMatch(html, /\$\{n\}/,
+    `${name}: nama guru dalam chip laporan mesti dilolos`);
+  assert.doesNotMatch(html, /return '<span>' \+ i \+ '<\/span>'/,
+    `${name}: metadata kelab mesti dilolos sebelum innerHTML`);
+  assert.doesNotMatch(html, /'<tr><td>Jawatan<\/td><td><b>' \+ k\.jawatan/,
+    `${name}: jawatan ahli mesti dilolos sebelum innerHTML`);
+  assert.doesNotMatch(html, /k\.nama\.replace\(\/\'\/g/,
+    `${name}: nama kelab dalam onclick mesti menggunakan kodArgumenURI_`);
+  assert.doesNotMatch(html, /(?:togolKelab|padamKelabAdmin)\(\\''\s*\+\s*k\.id/,
+    `${name}: ID kelab tidak boleh dimasukkan mentah ke pengendali sebaris`);
+  assert.doesNotMatch(html, /'<option value="' \+ k\.id/,
+    `${name}: ID kelab mesti dilolos sebelum atribut option`);
+  assert.doesNotMatch(html, /Sudah ahli: ' \+ m\.sudahAhli/,
+    `${name}: nama kelab sedia ada mesti dilolos`);
+  assert.doesNotMatch(html, /'<tr><td>' \+ m\.nama|'<td>' \+ m\.kelas/,
+    `${name}: jadual semakan murid mesti melolos nama dan kelas`);
+  assert.doesNotMatch(html, /color:#666">' \+ c\.nama/,
+    `${name}: nama kelab dalam jadual semakan mesti dilolos`);
+  assert.doesNotMatch(html, /k\.nama \+ '<\/option>'/,
+    `${name}: pilihan kelab mesti melolos nama`);
+}
+
+for (const [name, html] of [
+  ['GitHub Admin', read('docs', 'admin.html')],
+  ['Apps Script Admin', read('apps-script', 'Admin.html')]
+]) {
+  assert.doesNotMatch(html, /'<strong>' \+ (?:k\.nama|b\.nama) \+/,
+    `${name}: nama kelab/backup mesti dilolos sebelum dimasukkan ke innerHTML`);
 }
 
 console.log('Ujian kestabilan lulus: IC, kunci tulis, PAJSK, cache kelas dan relay SePadan selamat.');

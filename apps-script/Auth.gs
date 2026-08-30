@@ -99,6 +99,15 @@ function namaGuruSemua_() {
   return keluar.sort(function (a, b) { return a.localeCompare(b, 'ms'); });
 }
 
+/** Semak status sebenar guru; dropdown sahaja bukan kawalan keselamatan. */
+function guruAktif_(nama) {
+  var sasaran = String(nama || '').trim().toUpperCase();
+  if (!sasaran) return false;
+  return namaGuruSemua_().some(function (guru) {
+    return String(guru || '').trim().toUpperCase() === sasaran;
+  });
+}
+
 /**
  * Nama guru untuk dropdown log masuk.
  * Sengaja TIDAK memerlukan sesi — dropdown dipaparkan sebelum log masuk.
@@ -190,6 +199,10 @@ function login(id, password) {
       // tab GURU dan tab PENGGUNA boleh berbeza hurufnya.
       if (idPengguna.toUpperCase() === id.toUpperCase() &&
           passwordHash === hash) {
+        if (peranan === 'guru' && !guruAktif_(idPengguna)) {
+          return { berjaya: false,
+                   mesej: 'Akaun guru tidak aktif. Hubungi admin.' };
+        }
         kosongkanCubaan_(id);
         var token = buatToken(idPengguna, peranan);
         logAktiviti(idPengguna, 'LOGIN', 'Berjaya log masuk');
@@ -259,6 +272,11 @@ function semakSesi(token) {
   var sekarang = new Date().getTime();
 
   if (sekarang - sesi.masa > lapan_jam) {
+    PropertiesService.getScriptProperties()
+      .deleteProperty('SESI_' + token);
+    return null;
+  }
+  if (sesi.peranan === 'guru' && !guruAktif_(sesi.id)) {
     PropertiesService.getScriptProperties()
       .deleteProperty('SESI_' + token);
     return null;

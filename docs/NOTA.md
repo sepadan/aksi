@@ -27,9 +27,9 @@ sudah tersedia dalam folder ini.
 <div id="rangka"></div>
 <div class="kandungan"> … isi halaman … </div>
 
-<script src="js/config.js?v=20260828-11"></script>
-<script src="js/api.js?v=20260828-11"></script>
-<script src="js/app.js?v=20260828-11"></script>
+<script src="js/config.js?v=20260830-12"></script>
+<script src="js/api.js?v=20260830-12"></script>
+<script src="js/app.js?v=20260830-12"></script>
 <script>
   var token = initHalaman('Dashboard');   // TETAMU jika belum log masuk
   if (token) { /* muat data halaman */ }

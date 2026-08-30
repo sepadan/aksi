@@ -900,9 +900,9 @@
                 }).join('') + '</select>';
               return '<div class="item-baris">' +
                 '<div class="item-kiri">' +
-                '<strong>' + k.nama + '</strong>' +
+                '<strong>' + esc(k.nama) + '</strong>' +
                 '<span class="badge">' +
-                k.kategori + '</span>' +
+                esc(k.kategori) + '</span>' +
                 '</div>' +
                 '<div class="item-kanan">' +
                 pilihJenis +
@@ -910,14 +910,14 @@
                 statusKelas + '">' + k.status +
                 '</span>' +
                 '<button class="btn-kecil" ' +
-                'onclick="togolKelab(\'' + k.id +
-                '\')">' + butangLabel + '</button>' +
+                'onclick="togolKelab(decodeURIComponent(\'' +
+                kodArgumenURI_(k.id) + '\'))">' + butangLabel + '</button>' +
                 '<button class="btn-padam" ' +
                 'title="Padam kekal" ' +
-                'onclick="padamKelabAdmin(\'' + k.id +
-                '\',\'' +
-                k.nama.replace(/'/g, "\\'") +
-                '\')">🗑️</button>' +
+                'onclick="padamKelabAdmin(decodeURIComponent(\'' +
+                kodArgumenURI_(k.id) + '\'),decodeURIComponent(\'' +
+                kodArgumenURI_(k.nama) +
+                '\'))">🗑️</button>' +
                 '</div></div>';
             }).join('');
           })
@@ -1048,12 +1048,12 @@
             div.innerHTML = data.map(function(g) {
               return '<div class="item-baris">' +
                 '<div class="item-kiri">' +
-                '<strong>' + g.nama + '</strong>' +
+                '<strong>' + esc(g.nama) + '</strong>' +
                 '</div>' +
                 '<div class="item-kanan">' +
                 '<button class="btn-padam" ' +
                 'onclick="padamGuruAdmin(decodeURIComponent(\'' +
-                encodeURIComponent(g.id) + '\'),decodeURIComponent(\'' + encodeURIComponent(g.nama) +
+                kodArgumenURI_(g.id) + '\'),decodeURIComponent(\'' + kodArgumenURI_(g.nama) +
                 '\'))">Nyahaktif</button>' +
                 '</div></div>';
             }).join('');
@@ -1392,7 +1392,7 @@
                 .map(function(b) {
                   return '<div class="item-baris">' +
                     '<div class="item-kiri">' +
-                    '<strong>' + b.nama + '</strong>' +
+                    '<strong>' + esc(b.nama) + '</strong>' +
                     '<span class="masa-text">' +
                     b.tarikh + '</span>' +
                     '</div>' +

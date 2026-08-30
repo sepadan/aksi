@@ -305,7 +305,7 @@
           info.push('👨‍🏫 ' + kelabSemasa.guru2);
         document.getElementById('info-kelab')
           .innerHTML = info.map(function(i) {
-            return '<span>' + i + '</span>';
+            return '<span>' + esc(i) + '</span>';
           }).join('');
 
         var div = document.getElementById('jadual-ahli');
@@ -330,26 +330,26 @@
           // Jika jawatan semasa tiada dalam senarai
           if (a.jawatan &&
               jawatanPilihan.indexOf(a.jawatan) === -1) {
-            opts = '<option selected>' + a.jawatan +
+            opts = '<option selected>' + esc(a.jawatan) +
               '</option>' + opts;
           }
 
           html += '<tr>' +
             '<td>' + (i + 1) + '</td>' +
-            '<td>' + a.nama + '</td>' +
-            '<td>' + (a.kelas || '') + '</td>' +
+            '<td>' + esc(a.nama) + '</td>' +
+            '<td>' + esc(a.kelas || '') + '</td>' +
             '<td><select class="select-jawatan" ' +
-            'onchange="tukarJawatan(\'' + a.ic +
-            '\', this.value)">' + opts +
+            'onchange="tukarJawatan(decodeURIComponent(\'' +
+            kodArgumenURI_(a.ic) + '\'), this.value)">' + opts +
             '</select></td>' +
             '<td>' +
             (isAdmin() ?
               '<button class="btn-padam" ' +
               'title="Padam keahlian (admin)" ' +
-              'onclick="padamAhliKekal(\'' + a.ic +
-              '\',\'' +
-              a.nama.replace(/'/g, "\\'") +
-              '\')">🗑️</button>' : '') +
+              'onclick="padamAhliKekal(decodeURIComponent(\'' +
+              kodArgumenURI_(a.ic) + '\'),decodeURIComponent(\'' +
+              kodArgumenURI_(a.nama) +
+              '\'))">🗑️</button>' : '') +
             '</td>' +
             '</tr>';
         });
@@ -438,18 +438,19 @@
               var kanan;
               if (m.sudahAhli) {
                 kanan = '<span class="masa-text">' +
-                  'Sudah ahli: ' + m.sudahAhli +
+                  'Sudah ahli: ' + esc(m.sudahAhli) +
                   '</span>';
               } else {
                 kanan = '<button class="btn-kecil" ' +
-                  'onclick="tambahAhli(\'' + m.ic +
-                  '\')">+ Tambah</button>';
+                  'onclick="tambahAhli(decodeURIComponent(\'' +
+                  kodArgumenURI_(m.ic) +
+                  '\'))">+ Tambah</button>';
               }
               return '<div class="item-baris">' +
                 '<div class="item-kiri">' +
-                '<strong>' + m.nama + '</strong>' +
+                '<strong>' + esc(m.nama) + '</strong>' +
                 '<span class="badge">' +
-                (m.kelas || '') + '</span></div>' +
+                esc(m.kelas || '') + '</span></div>' +
                 '<div class="item-kanan">' + kanan +
                 '</div></div>';
             }).join('');
@@ -580,8 +581,8 @@
         html += '</tr></thead><tbody>';
 
         senaraiSemakanPapar.forEach(function(m, i) {
-          html += '<tr><td>' + m.nama + '</td>' +
-            '<td>' + m.kelas + '</td>';
+          html += '<tr><td>' + esc(m.nama) + '</td>' +
+            '<td>' + esc(m.kelas) + '</td>';
           KAT_SEMAK.forEach(function(k, j) {
             var c = m.kat[k[0]];
             var idSel = 'sel-semak-' + i + '-' + j;
@@ -596,7 +597,7 @@
                 ' onclick="bukaEditKeahlian(' +
                 i + ',' + j + ',\'' + idSel + '\')">' +
                 '✓<br><span style="font-size:11px;' +
-                ' color:#666">' + c.nama +
+                ' color:#666">' + esc(c.nama) +
                 ' ✏️</span></td>';
             } else {
               html += '<td style="text-align:center"' +
@@ -631,8 +632,8 @@
           ' class="form-input" style="font-size:12px;' +
           ' padding:5px; max-width:150px">';
         pilihan.forEach(function(k) {
-          html += '<option value="' + k.id + '">' +
-            k.nama + '</option>';
+          html += '<option value="' + escAtr(k.id) + '">' +
+            esc(k.nama) + '</option>';
         });
         html += '</select><br>' +
           '<button class="btn-kecil"' +
@@ -660,9 +661,9 @@
           ' class="form-input" style="font-size:12px;' +
           ' padding:5px; max-width:150px">';
         pilihan.forEach(function(k) {
-          html += '<option value="' + k.id + '"' +
+          html += '<option value="' + escAtr(k.id) + '"' +
             (k.id === semasa.id ? ' selected' : '') +
-            '>' + k.nama + '</option>';
+            '>' + esc(k.nama) + '</option>';
         });
         html += '</select><br>' +
           '<button class="btn-kecil"' +

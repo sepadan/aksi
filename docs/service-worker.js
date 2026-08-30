@@ -1,5 +1,5 @@
 // AKSI v1.5.0 · PWA — cache rangka statik sahaja, bukan data murid/API.
-const CACHE_VERSION = 'aksi-shell-v1.5.0-20260828-11';
+const CACHE_VERSION = 'aksi-shell-v1.5.0-20260830-12';
 const OFFLINE_URL = './offline.html';
 const APP_SHELL = [
   './',
@@ -16,11 +16,11 @@ const APP_SHELL = [
   OFFLINE_URL,
   './manifest.webmanifest',
   './manifest.webmanifest?v=1.5.0',
-  './css/style.css?v=20260828-11',
-  './js/config.js?v=20260828-11',
-  './js/api.js?v=20260828-11',
-  './js/app.js?v=20260828-11',
-  './js/pwa.js?v=20260828-11',
+  './css/style.css?v=20260830-12',
+  './js/config.js?v=20260830-12',
+  './js/api.js?v=20260830-12',
+  './js/app.js?v=20260830-12',
+  './js/pwa.js?v=20260830-12',
   './icons/aksi-192.png',
   './icons/aksi-512.png',
   './icons/aksi-maskable-512.png',

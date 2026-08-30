@@ -506,6 +506,13 @@
   }
   function escAtr(t) { return esc(t); }
 
+  // encodeURIComponent sengaja tidak mengekod apostrof. Apostrof mesti
+  // ditukar juga sebelum nilai diletakkan dalam rentetan onclick berpetik.
+  function kodArgumenURI_(t) {
+    return encodeURIComponent(String(t === null || t === undefined ? '' : t))
+      .replace(/'/g, '%27');
+  }
+
   function tunjukToast(mesej, jenis) {
     var toast = document.getElementById('toast');
     if (!toast) return;
@@ -614,6 +621,9 @@
   window.pilihTabLogin = pilihTabLogin;
   window.hantarLogin = hantarLogin;
   window.kendaliRalat = kendaliRalat;
+  window.esc = esc;
+  window.escAtr = escAtr;
+  window.kodArgumenURI_ = kodArgumenURI_;
 
   // Halaman lama memanggil ini dan menjangka null bermakna "jangan teruskan".
   // Dalam mod tetamu ia mesti memulangkan token supaya paparan tetap dimuat.
